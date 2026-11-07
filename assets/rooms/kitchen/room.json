@@ -92,14 +92,14 @@
       "label": "wicker basket",
       "file": "objects/wicker_basket_01.png",
       "center": [
-        575.0,
-        349.0
+        601.5,
+        353.0
       ],
       "size": [
-        102,
-        40
+        103,
+        42
       ],
-      "visible_fraction": 0.856
+      "visible_fraction": 0.995
     },
     {
       "id": "plastic_thermos",
@@ -176,14 +176,14 @@
       "label": "spray bottle",
       "file": "objects/multi_cleaner_bottle.png",
       "center": [
-        475.5,
+        456.5,
         334.0
       ],
       "size": [
         29,
         62
       ],
-      "visible_fraction": 0.983
+      "visible_fraction": 0.985
     },
     {
       "id": "watering_can_metal_01",

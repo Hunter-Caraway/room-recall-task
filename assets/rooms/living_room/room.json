@@ -78,14 +78,14 @@
       "label": "horse statue",
       "file": "objects/horse_statue_01.png",
       "center": [
-        484.5,
-        695.0
+        483.5,
+        687.0
       ],
       "size": [
-        33,
-        40
+        51,
+        62
       ],
-      "visible_fraction": 0.96
+      "visible_fraction": 0.981
     },
     {
       "id": "concrete_cat_statue",
@@ -141,7 +141,7 @@
         193,
         155
       ],
-      "visible_fraction": 0.7
+      "visible_fraction": 0.997
     },
     {
       "id": "magnifying_glass_01",
