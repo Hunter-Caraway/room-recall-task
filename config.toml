@@ -1,0 +1,23 @@
+# Study settings. Edit this file to change the study; no code changes needed.
+
+[study]
+# Labels only. The game plays no audio and never shows these to participants.
+# Keep the key to what each label means outside this project.
+# Must be an even number of conditions, with one room set per condition.
+conditions = ["A", "B"]
+room_sets = [["kitchen"], ["living_room"]]
+participants_on_run_sheet = 35
+
+[timing]
+study_seconds = 30
+transition_seconds = 3
+
+[scoring]
+# An object scores 1 within this distance of its spot, as a percent of room width.
+tolerance_percent = 5
+
+[practice]
+# Test build only: real participants need a separate practice room, because this
+# one shows them part of a scored room.
+room = "kitchen"
+objects = 3

@@ -1,0 +1,217 @@
+{
+  "room": "living_room",
+  "width": 1600,
+  "height": 900,
+  "objects": [
+    {
+      "id": "boombox",
+      "label": "boombox",
+      "file": "objects/boombox.png",
+      "center": [
+        1333.5,
+        330.0
+      ],
+      "size": [
+        99,
+        82
+      ],
+      "visible_fraction": 0.991
+    },
+    {
+      "id": "binoculars",
+      "label": "binoculars",
+      "file": "objects/binoculars.png",
+      "center": [
+        821.0,
+        564.0
+      ],
+      "size": [
+        110,
+        52
+      ],
+      "visible_fraction": 0.964
+    },
+    {
+      "id": "mantel_clock_01",
+      "label": "mantel clock",
+      "file": "objects/mantel_clock_01.png",
+      "center": [
+        1500.0,
+        429.5
+      ],
+      "size": [
+        126,
+        77
+      ],
+      "visible_fraction": 0.982
+    },
+    {
+      "id": "desk_lamp_arm_01",
+      "label": "desk lamp",
+      "file": "objects/desk_lamp_arm_01.png",
+      "center": [
+        1184.5,
+        338.5
+      ],
+      "size": [
+        97,
+        159
+      ],
+      "visible_fraction": 0.955
+    },
+    {
+      "id": "Camera_01",
+      "label": "camera",
+      "file": "objects/Camera_01.png",
+      "center": [
+        1049.5,
+        605.0
+      ],
+      "size": [
+        91,
+        80
+      ],
+      "visible_fraction": 0.977
+    },
+    {
+      "id": "horse_statue_01",
+      "label": "horse statue",
+      "file": "objects/horse_statue_01.png",
+      "center": [
+        484.5,
+        695.0
+      ],
+      "size": [
+        33,
+        40
+      ],
+      "visible_fraction": 0.96
+    },
+    {
+      "id": "concrete_cat_statue",
+      "label": "cat statue",
+      "file": "objects/concrete_cat_statue.png",
+      "center": [
+        541.5,
+        584.0
+      ],
+      "size": [
+        79,
+        120
+      ],
+      "visible_fraction": 0.99
+    },
+    {
+      "id": "antique_ceramic_vase_01",
+      "label": "antique vase",
+      "file": "objects/antique_ceramic_vase_01.png",
+      "center": [
+        544.0,
+        214.5
+      ],
+      "size": [
+        46,
+        81
+      ],
+      "visible_fraction": 0.988
+    },
+    {
+      "id": "brass_candleholders",
+      "label": "candleholder",
+      "file": "objects/brass_candleholders.png",
+      "center": [
+        323.0,
+        213.0
+      ],
+      "size": [
+        54,
+        82
+      ],
+      "visible_fraction": 0.95
+    },
+    {
+      "id": "vintage_suitcase",
+      "label": "suitcase",
+      "file": "objects/vintage_suitcase.png",
+      "center": [
+        1287.5,
+        723.5
+      ],
+      "size": [
+        193,
+        155
+      ],
+      "visible_fraction": 0.7
+    },
+    {
+      "id": "magnifying_glass_01",
+      "label": "magnifying glass",
+      "file": "objects/magnifying_glass_01.png",
+      "center": [
+        928.0,
+        533.5
+      ],
+      "size": [
+        96,
+        41
+      ],
+      "visible_fraction": 0.978
+    },
+    {
+      "id": "rubber_duck_toy",
+      "label": "rubber duck",
+      "file": "objects/rubber_duck_toy.png",
+      "center": [
+        447.0,
+        309.0
+      ],
+      "size": [
+        34,
+        44
+      ],
+      "visible_fraction": 0.985
+    },
+    {
+      "id": "carved_wooden_elephant",
+      "label": "carved elephant",
+      "file": "objects/carved_wooden_elephant.png",
+      "center": [
+        423.5,
+        133.5
+      ],
+      "size": [
+        55,
+        43
+      ],
+      "visible_fraction": 0.983
+    },
+    {
+      "id": "potted_plant_04",
+      "label": "small plant",
+      "file": "objects/potted_plant_04.png",
+      "center": [
+        1417.0,
+        349.0
+      ],
+      "size": [
+        80,
+        98
+      ],
+      "visible_fraction": 0.984
+    },
+    {
+      "id": "Ukulele_01",
+      "label": "ukulele",
+      "file": "objects/Ukulele_01.png",
+      "center": [
+        947.0,
+        443.5
+      ],
+      "size": [
+        126,
+        27
+      ],
+      "visible_fraction": 0.975
+    }
+  ]
+}
