@@ -4,6 +4,12 @@ About 20 minutes the first time. Use the same computer, screen and mouse as the 
 
 ## Install (once)
 
+**Using the .exe build:** unzip `MemoryTask-Windows-exe` and skip to "Try a session",
+double-clicking `MemoryTask.exe` instead of `Run Task.bat`. If Windows SmartScreen appears,
+choose **More info**, then **Run anyway**, or ask IT to allow it.
+
+**Using the PsychoPy build:**
+
 1. Install **PsychoPy Standalone 2026.2.5, Python 3.11 version** from https://www.psychopy.org/download.html. If it needs admin rights, ask IT.
 2. Unzip the `MemoryTask-Windows` folder somewhere the account can write to, such as the Desktop.
 3. Double-click `Self Test.bat`. It should end with `SELF TEST PASSED`. If it says PsychoPy was not found, put the full path of PsychoPy's `python.exe` into `psychopy_python.txt` in the same folder.

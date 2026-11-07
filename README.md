@@ -40,6 +40,20 @@ does not match the room's perspective.
 
 ## Running it on the Windows lab PC
 
+There are two builds. They show the same screens, use the same rooms and write the same
+data files; only the drawing library differs.
+
+- **`MemoryTask-Windows-exe`**: one `MemoryTask.exe`, nothing to install. Draws with pygame.
+  Double-click it; `MemoryTask.exe --self-test` writes `selftest.log`. An edited
+  `config.toml` next to the .exe overrides the built-in one. It does not record dropped
+  display frames (`study_dropped_frames` is empty).
+- **`MemoryTask-Windows-PsychoPy`**: the PsychoPy version, below.
+
+Use one build for every participant in a study, and say which in the write-up; the `build`
+column records it.
+
+### PsychoPy build
+
 1. Install **PsychoPy Standalone 2026.2.5, the Python 3.11 version**, from the PsychoPy download page (once).
 2. Unzip the `MemoryTask-Windows` folder somewhere the account can write to.
 3. Double-click `Run Task.bat`.
@@ -103,8 +117,9 @@ python3.11 -m venv .venv-psychopy
 .venv-psychopy/bin/python run_task.py --windowed
 ```
 
-The tests and `--self-test` need only `pytest` and `pillow`, not PsychoPy. GitHub Actions
-runs them on Windows and uploads the lab folder as `MemoryTask-Windows`. GitHub's machines
+`--pygame` runs the pygame display instead (`.venv` with `requirements-exe.txt`). The tests
+and `--self-test` need only `pytest` and `pillow`. GitHub Actions runs them on Windows, builds
+`MemoryTask.exe` with PyInstaller, runs the self-test inside it, and uploads both builds. GitHub's machines
 have no graphics card, so the PsychoPy window itself is only checked on the lab PC.
 
 ## Art
