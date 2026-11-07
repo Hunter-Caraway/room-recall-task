@@ -11,11 +11,32 @@ OUT = ROOT / "assets"
 MIN_VISIBLE = 0.90  # share of each object not blocked by something in front of it
 EDGE_MARGIN = 6  # px from the image border
 MIN_SIDE = 28  # px; smaller objects are too hard to see
+MIN_SPACING = 0.10  # share of room width between correct spots: twice the 5% tolerance
+ICON_BOX, ICON_LONG_SIDE = 160, 150  # px
+ROOMS = ("kitchen", "living_room", "hallway")
+
+
+def build_icon(source, target):
+    """Trim the studio render, scale its longest side to 150 px, centre it on 160x160."""
+    image = Image.open(source).convert("RGBA")
+    box = image.getchannel("A").point(lambda v: 255 if v > 8 else 0).getbbox()
+    if box is None:
+        return "icon renders nothing"
+    image = image.crop(box)
+    scale = ICON_LONG_SIDE / max(image.size)
+    image = image.resize((max(1, round(image.width * scale)), max(1, round(image.height * scale))), Image.LANCZOS)
+    canvas = Image.new("RGBA", (ICON_BOX, ICON_BOX), (0, 0, 0, 0))
+    canvas.paste(image, ((ICON_BOX - image.width) // 2, (ICON_BOX - image.height) // 2), image)
+    canvas.save(target, optimize=True)
+    return None
 
 
 def build_room(room):
     raw, out = RAW / room, OUT / "rooms" / room
-    (out / "objects").mkdir(parents=True, exist_ok=True)
+    for sub in ("objects", "icons"):
+        (out / sub).mkdir(parents=True, exist_ok=True)
+        for old in (out / sub).glob("*.png"):
+            old.unlink()
     for name in ("full", "empty"):
         Image.open(raw / f"{name}.png").convert("RGB").save(out / f"{name}.jpg", quality=92, subsampling=0)
     width, height = Image.open(raw / "full.png").size
@@ -43,13 +64,18 @@ def build_room(room):
             problems.append(f"{entry['label']}: too small ({w}x{h})")
         file = f"objects/{entry['id']}.png"
         sprite.crop(box).save(out / file, optimize=True)
+        icon = f"icons/{entry['id']}.png"
+        icon_problem = build_icon(raw / "icons" / f"{i:02d}.png", out / icon)
+        if icon_problem:
+            problems.append(f"{entry['label']}: {icon_problem}")
         objects.append({
-            "id": entry["id"], "label": entry["label"], "file": file,
+            "id": entry["id"], "label": entry["label"], "file": file, "icon": icon,
             "center": [(box[0] + box[2]) / 2, (box[1] + box[3]) / 2],
             "size": [w, h], "visible_fraction": round(visible, 3),
         })
-    # Correct spots must be far enough apart that one placement cannot score two objects.
-    tolerance_px = 0.05 * width
+    # Correct spots must be far enough apart that one placement cannot score two
+    # objects, and a swap between neighbours is distinguishable from a near miss.
+    tolerance_px = MIN_SPACING * width
     for a in range(len(objects)):
         for b in range(a + 1, len(objects)):
             ca, cb = objects[a]["center"], objects[b]["center"]
@@ -72,7 +98,7 @@ def build_transition():
 
 def main():
     problems = []
-    for room in ("kitchen", "living_room"):
+    for room in ROOMS:
         problems += [f"{room}: {p}" for p in build_room(room)]
     problems += build_transition()
     for problem in problems:

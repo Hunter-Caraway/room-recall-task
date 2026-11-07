@@ -46,6 +46,30 @@ EXTRA_CLUTTER = [
     "television_02", "pocket_watch", "fancy_picture_frame_02",
 ]
 
+# Added for the rebuilt rooms (round 2) and the hallway practice room.
+ROUND2 = [
+    "CheeseBox_01", "Television_01", "modern_wooden_cabinet", "vintage_cabinet_01",
+    "painted_wooden_bench", "fishermans_hat", "rubber_boots", "garden_gloves_01",
+    "vintage_flashlight", "filmstrip_projector_8mm", "side_table_tall_01",
+    "food_pomegranate_01", "food_ginger_01", "sofa_02", "modern_coffee_table_01",
+    "CoffeeTable_01", "round_wooden_table_01", "small_wooden_table_01",
+    "painted_wooden_cabinet_02", "vintage_wooden_drawer_01", "ClassicNightstand_01",
+    "wooden_crate_01", "modern_ceiling_lamp_01", "brass_pot_02", "cardboard_box_01",
+    "painted_wooden_nightstand", "seadogs_compass",
+    "vintage_telephone_wall_clock", "Shelf_01", "vintage_pocket_watch",
+    "WoodenTable_01", "WoodenTable_02", "wooden_table_02", "painted_wooden_table", "gallinera_table",
+    "round_wooden_table_02", "painted_wooden_chair_01", "gallinera_chair", "wooden_stool_01",
+    "food_lychee_01", "wooden_broom", "trashbag", "planter_box_01", "brass_diya_lantern",
+]
+
 ALL_MODELS = sorted(set(
-    FURNITURE + KITCHEN_SCORED + KITCHEN_CLUTTER + LIVING_SCORED + LIVING_CLUTTER + EXTRA_CLUTTER
+    FURNITURE + KITCHEN_SCORED + KITCHEN_CLUTTER + LIVING_SCORED + LIVING_CLUTTER + EXTRA_CLUTTER + ROUND2
 ))
+
+TEXTURES = [
+    "floor_tiles_06", "herringbone_parquet", "kitchen_wood", "laminate_floor_02",
+    "long_white_tiles", "marble_01", "oak_veneer_01", "painted_plaster_wall", "white_plaster_02",
+    "fabric_pattern_07", "poly_wool_herringbone", "caban", "plank_flooring_02",
+    "patterned_terracotta_tiling",
+]
+HDRIS = ["symmetrical_garden_02", "cloudy_vondelpark"]

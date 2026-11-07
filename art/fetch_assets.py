@@ -6,10 +6,9 @@ import sys
 import urllib.request
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
-from assets_manifest import ALL_MODELS
+from assets_manifest import ALL_MODELS, HDRIS, TEXTURES
 
 OUT = pathlib.Path(__file__).parent / "_downloads"
-HDRI = "symmetrical_garden_02"
 UA = {"User-Agent": "victoria-project-asset-fetcher"}
 
 
@@ -24,6 +23,8 @@ def fetch_model(name):
     if marker.exists():
         return name, "cached"
     info = json.loads(get(f"https://api.polyhaven.com/files/{name}"))
+    if "gltf" not in info:
+        raise ValueError(f"{name} has no glTF download")
     entry = info["gltf"]["1k"]["gltf"]
     target.mkdir(parents=True, exist_ok=True)
     (target / f"{name}.gltf").write_bytes(get(entry["url"]))
@@ -67,7 +68,7 @@ def main(textures):
     with cf.ThreadPoolExecutor(8) as ex:
         futs = {ex.submit(fetch_model, n): n for n in ALL_MODELS}
         futs |= {ex.submit(fetch_texture, n): n for n in textures}
-        futs[ex.submit(fetch_hdri, HDRI)] = HDRI
+        futs |= {ex.submit(fetch_hdri, n): n for n in HDRIS}
         for f in cf.as_completed(futs):
             try:
                 f.result()
@@ -78,4 +79,4 @@ def main(textures):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main(sorted(set(TEXTURES + sys.argv[1:])))

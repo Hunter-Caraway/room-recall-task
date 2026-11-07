@@ -4,142 +4,107 @@
   "height": 900,
   "objects": [
     {
-      "id": "wooden_bowl_01",
-      "label": "wooden bowl",
-      "file": "objects/wooden_bowl_01.png",
-      "center": [
-        670.0,
-        577.5
-      ],
-      "size": [
-        136,
-        79
-      ],
-      "visible_fraction": 0.995
-    },
-    {
       "id": "wooden_cutting_board",
       "label": "cutting board",
       "file": "objects/wooden_cutting_board.png",
+      "icon": "icons/wooden_cutting_board.png",
       "center": [
-        889.0,
-        512.5
+        422.0,
+        400.0
       ],
       "size": [
-        174,
-        59
+        142,
+        22
       ],
-      "visible_fraction": 0.981
+      "visible_fraction": 0.969
     },
     {
-      "id": "tea_set_01",
-      "label": "teapot",
-      "file": "objects/tea_set_01.png",
+      "id": "brass_pan_01",
+      "label": "brass pan",
+      "file": "objects/brass_pan_01.png",
+      "icon": "icons/brass_pan_01.png",
       "center": [
-        1047.0,
-        571.5
+        601.0,
+        398.5
       ],
       "size": [
-        114,
-        103
+        128,
+        21
       ],
-      "visible_fraction": 0.995
+      "visible_fraction": 0.966
     },
     {
-      "id": "pot_enamel_01",
-      "label": "enamel pot",
-      "file": "objects/pot_enamel_01.png",
+      "id": "multi_cleaner_bottle",
+      "label": "spray bottle",
+      "file": "objects/multi_cleaner_bottle.png",
+      "icon": "icons/multi_cleaner_bottle.png",
       "center": [
-        749.0,
-        358.0
+        778.5,
+        368.0
       ],
       "size": [
-        62,
-        44
+        25,
+        64
       ],
-      "visible_fraction": 0.991
+      "visible_fraction": 0.973
     },
     {
       "id": "vintage_electric_kettle",
       "label": "kettle",
       "file": "objects/vintage_electric_kettle.png",
+      "icon": "icons/vintage_electric_kettle.png",
       "center": [
-        937.0,
-        330.0
+        1112.5,
+        363.0
       ],
       "size": [
-        74,
-        78
+        89,
+        90
       ],
-      "visible_fraction": 0.982
-    },
-    {
-      "id": "bananas",
-      "label": "bananas",
-      "file": "objects/bananas.png",
-      "center": [
-        1274.0,
-        335.5
-      ],
-      "size": [
-        58,
-        57
-      ],
-      "visible_fraction": 0.961
+      "visible_fraction": 0.986
     },
     {
       "id": "wicker_basket_01",
       "label": "wicker basket",
       "file": "objects/wicker_basket_01.png",
+      "icon": "icons/wicker_basket_01.png",
       "center": [
-        601.5,
-        353.0
+        1424.0,
+        581.5
       ],
       "size": [
-        103,
-        42
+        166,
+        67
       ],
-      "visible_fraction": 0.995
+      "visible_fraction": 0.955
     },
     {
-      "id": "plastic_thermos",
-      "label": "thermos",
-      "file": "objects/plastic_thermos.png",
+      "id": "pot_enamel_01",
+      "label": "enamel pot",
+      "file": "objects/pot_enamel_01.png",
+      "icon": "icons/pot_enamel_01.png",
       "center": [
-        1167.0,
-        324.5
+        1226.5,
+        236.5
       ],
       "size": [
-        34,
-        79
+        77,
+        51
       ],
-      "visible_fraction": 0.984
+      "visible_fraction": 0.986
     },
     {
-      "id": "alarm_clock_01",
-      "label": "alarm clock",
-      "file": "objects/alarm_clock_01.png",
+      "id": "tea_set_01",
+      "label": "teacup",
+      "file": "objects/tea_set_01.png",
+      "icon": "icons/tea_set_01.png",
       "center": [
-        1292.0,
-        187.5
+        1395.0,
+        247.5
       ],
       "size": [
-        42,
-        47
-      ],
-      "visible_fraction": 0.987
-    },
-    {
-      "id": "jug_01",
-      "label": "jug",
-      "file": "objects/jug_01.png",
-      "center": [
-        597.5,
-        195.5
-      ],
-      "size": [
-        65,
-        53
+        50,
+        29
       ],
       "visible_fraction": 0.989
     },
@@ -147,71 +112,121 @@
       "id": "carved_wooden_plate",
       "label": "carved plate",
       "file": "objects/carved_wooden_plate.png",
+      "icon": "icons/carved_wooden_plate.png",
       "center": [
-        1351.0,
-        372.0
+        947.0,
+        314.0
       ],
       "size": [
-        88,
-        22
+        72,
+        70
       ],
-      "visible_fraction": 0.982
+      "visible_fraction": 0.931
     },
     {
-      "id": "ceramic_vase_01",
-      "label": "ceramic vase",
-      "file": "objects/ceramic_vase_01.png",
+      "id": "wine_bottles_01",
+      "label": "wine bottle",
+      "file": "objects/wine_bottles_01.png",
+      "icon": "icons/wine_bottles_01.png",
       "center": [
-        1459.0,
-        360.0
+        465.0,
+        705.5
       ],
       "size": [
-        84,
-        142
+        42,
+        147
       ],
-      "visible_fraction": 0.993
+      "visible_fraction": 0.994
     },
     {
-      "id": "multi_cleaner_bottle",
-      "label": "spray bottle",
-      "file": "objects/multi_cleaner_bottle.png",
+      "id": "CheeseBox_01",
+      "label": "cheese box",
+      "file": "objects/CheeseBox_01.png",
+      "icon": "icons/CheeseBox_01.png",
       "center": [
-        456.5,
-        334.0
+        213.5,
+        253.5
       ],
       "size": [
-        29,
-        62
+        85,
+        21
       ],
-      "visible_fraction": 0.985
+      "visible_fraction": 0.957
     },
     {
-      "id": "watering_can_metal_01",
-      "label": "watering can",
-      "file": "objects/watering_can_metal_01.png",
+      "id": "strawberry_chocolate_cake",
+      "label": "cake",
+      "file": "objects/strawberry_chocolate_cake.png",
+      "icon": "icons/strawberry_chocolate_cake.png",
       "center": [
-        408.0,
-        618.5
+        633.0,
+        608.5
       ],
       "size": [
-        92,
-        63
+        128,
+        67
       ],
-      "visible_fraction": 0.987
+      "visible_fraction": 0.995
     },
     {
-      "id": "brass_pan_01",
-      "label": "brass pan",
-      "file": "objects/brass_pan_01.png",
+      "id": "wooden_spoon",
+      "label": "wooden spoon",
+      "file": "objects/wooden_spoon.png",
+      "icon": "icons/wooden_spoon.png",
       "center": [
-        505.5,
-        214.0
+        814.5,
+        636.5
       ],
       "size": [
-        107,
-        16
+        143,
+        29
       ],
-      "visible_fraction": 0.94
+      "visible_fraction": 0.979
+    },
+    {
+      "id": "bananas",
+      "label": "bananas",
+      "file": "objects/bananas.png",
+      "icon": "icons/bananas.png",
+      "center": [
+        993.5,
+        553.5
+      ],
+      "size": [
+        67,
+        99
+      ],
+      "visible_fraction": 0.994
+    },
+    {
+      "id": "plastic_thermos",
+      "label": "thermos",
+      "file": "objects/plastic_thermos.png",
+      "icon": "icons/plastic_thermos.png",
+      "center": [
+        1222.5,
+        701.0
+      ],
+      "size": [
+        71,
+        168
+      ],
+      "visible_fraction": 0.992
+    },
+    {
+      "id": "wooden_bucket_01",
+      "label": "wooden bucket",
+      "file": "objects/wooden_bucket_01.png",
+      "icon": "icons/wooden_bucket_01.png",
+      "center": [
+        260.0,
+        678.5
+      ],
+      "size": [
+        100,
+        143
+      ],
+      "visible_fraction": 0.992
     }
   ]
 }

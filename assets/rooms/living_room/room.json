@@ -7,211 +7,226 @@
       "id": "boombox",
       "label": "boombox",
       "file": "objects/boombox.png",
+      "icon": "icons/boombox.png",
       "center": [
-        1333.5,
-        330.0
+        329.5,
+        582.0
       ],
       "size": [
-        99,
-        82
+        107,
+        66
       ],
-      "visible_fraction": 0.991
+      "visible_fraction": 0.948
     },
     {
-      "id": "binoculars",
-      "label": "binoculars",
-      "file": "objects/binoculars.png",
+      "id": "lambis_shell",
+      "label": "seashell",
+      "file": "objects/lambis_shell.png",
+      "icon": "icons/lambis_shell.png",
       "center": [
-        821.0,
-        564.0
+        487.0,
+        465.5
       ],
       "size": [
-        110,
-        52
+        64,
+        21
       ],
-      "visible_fraction": 0.964
+      "visible_fraction": 0.943
+    },
+    {
+      "id": "filmstrip_projector_8mm",
+      "label": "film projector",
+      "file": "objects/filmstrip_projector_8mm.png",
+      "icon": "icons/filmstrip_projector_8mm.png",
+      "center": [
+        280.0,
+        359.0
+      ],
+      "size": [
+        120,
+        70
+      ],
+      "visible_fraction": 0.991
     },
     {
       "id": "mantel_clock_01",
       "label": "mantel clock",
       "file": "objects/mantel_clock_01.png",
+      "icon": "icons/mantel_clock_01.png",
       "center": [
-        1500.0,
-        429.5
+        449.0,
+        280.5
       ],
       "size": [
-        126,
-        77
+        106,
+        47
       ],
-      "visible_fraction": 0.982
-    },
-    {
-      "id": "desk_lamp_arm_01",
-      "label": "desk lamp",
-      "file": "objects/desk_lamp_arm_01.png",
-      "center": [
-        1184.5,
-        338.5
-      ],
-      "size": [
-        97,
-        159
-      ],
-      "visible_fraction": 0.955
-    },
-    {
-      "id": "Camera_01",
-      "label": "camera",
-      "file": "objects/Camera_01.png",
-      "center": [
-        1049.5,
-        605.0
-      ],
-      "size": [
-        91,
-        80
-      ],
-      "visible_fraction": 0.977
-    },
-    {
-      "id": "horse_statue_01",
-      "label": "horse statue",
-      "file": "objects/horse_statue_01.png",
-      "center": [
-        483.5,
-        687.0
-      ],
-      "size": [
-        51,
-        62
-      ],
-      "visible_fraction": 0.981
-    },
-    {
-      "id": "concrete_cat_statue",
-      "label": "cat statue",
-      "file": "objects/concrete_cat_statue.png",
-      "center": [
-        541.5,
-        584.0
-      ],
-      "size": [
-        79,
-        120
-      ],
-      "visible_fraction": 0.99
-    },
-    {
-      "id": "antique_ceramic_vase_01",
-      "label": "antique vase",
-      "file": "objects/antique_ceramic_vase_01.png",
-      "center": [
-        544.0,
-        214.5
-      ],
-      "size": [
-        46,
-        81
-      ],
-      "visible_fraction": 0.988
-    },
-    {
-      "id": "brass_candleholders",
-      "label": "candleholder",
-      "file": "objects/brass_candleholders.png",
-      "center": [
-        323.0,
-        213.0
-      ],
-      "size": [
-        54,
-        82
-      ],
-      "visible_fraction": 0.95
-    },
-    {
-      "id": "vintage_suitcase",
-      "label": "suitcase",
-      "file": "objects/vintage_suitcase.png",
-      "center": [
-        1287.5,
-        723.5
-      ],
-      "size": [
-        193,
-        155
-      ],
-      "visible_fraction": 0.997
-    },
-    {
-      "id": "magnifying_glass_01",
-      "label": "magnifying glass",
-      "file": "objects/magnifying_glass_01.png",
-      "center": [
-        928.0,
-        533.5
-      ],
-      "size": [
-        96,
-        41
-      ],
-      "visible_fraction": 0.978
-    },
-    {
-      "id": "rubber_duck_toy",
-      "label": "rubber duck",
-      "file": "objects/rubber_duck_toy.png",
-      "center": [
-        447.0,
-        309.0
-      ],
-      "size": [
-        34,
-        44
-      ],
-      "visible_fraction": 0.985
-    },
-    {
-      "id": "carved_wooden_elephant",
-      "label": "carved elephant",
-      "file": "objects/carved_wooden_elephant.png",
-      "center": [
-        423.5,
-        133.5
-      ],
-      "size": [
-        55,
-        43
-      ],
-      "visible_fraction": 0.983
+      "visible_fraction": 0.992
     },
     {
       "id": "potted_plant_04",
       "label": "small plant",
       "file": "objects/potted_plant_04.png",
+      "icon": "icons/potted_plant_04.png",
       "center": [
-        1417.0,
-        349.0
+        786.5,
+        334.0
       ],
       "size": [
-        80,
-        98
+        49,
+        78
       ],
-      "visible_fraction": 0.984
+      "visible_fraction": 0.978
+    },
+    {
+      "id": "binoculars",
+      "label": "binoculars",
+      "file": "objects/binoculars.png",
+      "icon": "icons/binoculars.png",
+      "center": [
+        991.5,
+        361.5
+      ],
+      "size": [
+        77,
+        27
+      ],
+      "visible_fraction": 0.967
+    },
+    {
+      "id": "chess_set",
+      "label": "chess set",
+      "file": "objects/chess_set.png",
+      "icon": "icons/chess_set.png",
+      "center": [
+        1141.5,
+        507.0
+      ],
+      "size": [
+        85,
+        26
+      ],
+      "visible_fraction": 0.959
+    },
+    {
+      "id": "brass_candleholders",
+      "label": "candleholder",
+      "file": "objects/brass_candleholders.png",
+      "icon": "icons/brass_candleholders.png",
+      "center": [
+        1317.0,
+        476.0
+      ],
+      "size": [
+        44,
+        66
+      ],
+      "visible_fraction": 0.931
+    },
+    {
+      "id": "standing_picture_frame_02",
+      "label": "picture frame",
+      "file": "objects/standing_picture_frame_02.png",
+      "icon": "icons/standing_picture_frame_02.png",
+      "center": [
+        1496.5,
+        283.5
+      ],
+      "size": [
+        89,
+        89
+      ],
+      "visible_fraction": 0.994
+    },
+    {
+      "id": "Camera_01",
+      "label": "camera",
+      "file": "objects/Camera_01.png",
+      "icon": "icons/Camera_01.png",
+      "center": [
+        787.0,
+        613.0
+      ],
+      "size": [
+        66,
+        54
+      ],
+      "visible_fraction": 0.972
+    },
+    {
+      "id": "magnifying_glass_01",
+      "label": "magnifying glass",
+      "file": "objects/magnifying_glass_01.png",
+      "icon": "icons/magnifying_glass_01.png",
+      "center": [
+        950.5,
+        653.0
+      ],
+      "size": [
+        51,
+        44
+      ],
+      "visible_fraction": 0.991
+    },
+    {
+      "id": "seadogs_compass",
+      "label": "compass",
+      "file": "objects/seadogs_compass.png",
+      "icon": "icons/seadogs_compass.png",
+      "center": [
+        621.0,
+        642.0
+      ],
+      "size": [
+        34,
+        50
+      ],
+      "visible_fraction": 0.978
     },
     {
       "id": "Ukulele_01",
       "label": "ukulele",
       "file": "objects/Ukulele_01.png",
+      "icon": "icons/Ukulele_01.png",
       "center": [
-        947.0,
-        443.5
+        1333.5,
+        643.0
       ],
       "size": [
-        126,
-        27
+        215,
+        74
       ],
-      "visible_fraction": 0.975
+      "visible_fraction": 0.986
+    },
+    {
+      "id": "horse_statue_01",
+      "label": "horse statue",
+      "file": "objects/horse_statue_01.png",
+      "icon": "icons/horse_statue_01.png",
+      "center": [
+        139.0,
+        535.0
+      ],
+      "size": [
+        62,
+        76
+      ],
+      "visible_fraction": 0.977
+    },
+    {
+      "id": "antique_ceramic_vase_01",
+      "label": "vase",
+      "file": "objects/antique_ceramic_vase_01.png",
+      "icon": "icons/antique_ceramic_vase_01.png",
+      "center": [
+        1522.0,
+        726.0
+      ],
+      "size": [
+        94,
+        150
+      ],
+      "visible_fraction": 0.996
     }
   ]
 }
