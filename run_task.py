@@ -1,4 +1,4 @@
-"""Start the memory task: `python run_task.py`, or the packaged MemoryTask.exe."""
+"""Start the memory task with PsychoPy's Python: `python run_task.py` (or Run Task.bat on Windows)."""
 import sys
 from pathlib import Path
 

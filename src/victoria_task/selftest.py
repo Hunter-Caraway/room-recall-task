@@ -1,196 +1,224 @@
-"""Play a full scripted session with no window and check what got saved.
+"""Play whole scripted sessions with no window and check what got saved.
 
-Runs in the tests and inside the packaged .exe (`MemoryTask.exe --self-test`), so a
-build is proven on the operating system it will run on. It writes a log file, since
-a packaged windowed app has no console. Real display and mouse behavior still need
-a person at the lab computer.
+Uses the real session flow (flow.py), drag-and-drop logic (layout.py) and data
+files, with a scripted display in place of PsychoPy. Run it on the lab computer
+with `Self Test.bat` or `python run_task.py --self-test`; it writes selftest.log.
+Real display and mouse behaviour still need a person at the lab computer.
 """
 from __future__ import annotations
 
 import csv
 import dataclasses
-import os
+import itertools
+import math
 import tempfile
 import traceback
 from pathlib import Path
 
-os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
-
-import pygame
-
-from .app import DONE_RECT, ROOM_ORIGIN, EXPERIMENTER_KEY, Game, QuitSession
 from .config import Config
-from .session import Session
+from .filler import FillerResult
+from .flow import PAUSE_TEXT, Experiment, QuitSession
+from .layout import DONE_RECT, ICON_PX, PlacementController, load_icon, to_canvas
+from .session import Session, load_room
+
+DONE_POINT = (DONE_RECT[0] + DONE_RECT[2] / 2, DONE_RECT[1] + DONE_RECT[3] / 2)
 
 
-def _mouse(kind, position):
-    return pygame.event.Event(kind, {"pos": position, "button": 1, "rel": (0, 0), "buttons": (1, 0, 0)})
+def solid_point(controller: PlacementController, object_id: str) -> tuple[float, float]:
+    """A canvas point on a solid pixel of a placed object, nearest its centre."""
+    icon = controller.icons[object_id]
+    cx, cy = controller.placed_centre(object_id)
+    w, h = icon.size
+    best = min(
+        ((c, r) for r in range(h) for c in range(w) if icon.solid[r][c]),
+        key=lambda p: (p[0] - w / 2) ** 2 + (p[1] - h / 2) ** 2,
+    )
+    return cx - w / 2 + best[0] + 0.5, cy - h / 2 + best[1] + 0.5
 
 
-def _key(key):
-    return pygame.event.Event(pygame.KEYDOWN, {"key": key, "mod": 0, "unicode": "", "scancode": 0})
+class ScriptedDisplay:
+    """Answers every screen automatically and records the text shown."""
 
-
-class ScriptedGame(Game):
-    """Answers every screen automatically, and records all text shown."""
-
-    def __init__(self, *args, participant=1, stop_after_rooms=None, **kwargs):
-        super().__init__(*args, fullscreen=False, **kwargs)
+    def __init__(self, participant: int):
         self.participant = participant
-        self.stop_after_rooms = stop_after_rooms
-        self.rooms_done = 0
-        self.queue: list[list] = []
+        self.clock = itertools.count(0, 16)
         self.shown: list[str] = []
-        self.scored_rounds = 0
-        self.screenshot_dir: Path | None = None
+        self.prepared: list[str] = []
+        self.transitions = 0
 
-    def events(self):
-        if self.queue:
-            return self.queue.pop(0)
-        return []
+    def now_ms(self) -> int:
+        return next(self.clock)
 
-    def show_text(self, lines):
-        self.shown += [text for text, _, _ in lines]
-        super().show_text(lines)
-
-    def wait_screen(self, lines, key=None):
-        self.queue.append([_key(pygame.K_SPACE if key is None else key)])
-        super().wait_screen(lines, key)
+    def message(self, lines, key):
+        self.shown += [text for text, _ in lines]
 
     def enter_participant(self):
         return self.participant
 
-    def confirm_existing(self, session):
-        return not session.is_complete()
+    def ask_resume(self, number):
+        return True
 
-    def study(self, scene):
-        result = super().study(scene)
-        self._shot(f"{scene.info.name}_blink")
-        return result
+    def prepare(self, room, icons):
+        self.prepared.append(room.name)
 
-    def on_placement_start(self, scene, order, thumbs):
-        script: list[list] = []
-        full_round = len(order) == len(scene.info.objects)
-        # Done is locked at first: clicking it now must do nothing.
-        script.append([_mouse(pygame.MOUSEBUTTONDOWN, DONE_RECT.center)])
-        script.append([_mouse(pygame.MOUSEBUTTONUP, DONE_RECT.center)])
+    def study(self, room, seconds, cut_to_empty):
+        return int(seconds * 1000), 16.7, 0
+
+    def filler(self, items, seconds):
+        # Answer five sums, getting the last one wrong.
+        answers = [p.is_true for p in items[:4]] + [not items[4].is_true]
+        return FillerResult(answered=5, correct=sum(a == p.is_true for a, p in zip(answers, items)))
+
+    def placement(self, room, controller: PlacementController):
+        full_round = len(controller.order) == len(room.objects)
+        assert not controller.press(DONE_POINT, self.now_ms()), "Done worked before all objects were placed"
+        order = controller.order
         for index, obj in enumerate(order):
-            start = thumbs[obj.id][1].center
-            target = (int(obj.center[0] + ROOM_ORIGIN[0]), int(obj.center[1] + ROOM_ORIGIN[1]))
+            start = controller.slots[obj.id]
+            target = to_canvas(obj.center)
             if full_round and index == 0:  # dropped just outside tolerance: must score 0
-                target = (target[0] + (81 if target[0] < 1000 else -81), target[1])
+                shift = room.width * 0.0505
+                target = (target[0] + (shift if obj.center[0] < room.width / 2 else -shift), target[1])
+            if full_round and index == 2:  # dropped on the next object's spot: a swap error
+                target = to_canvas(order[3].center)
             if full_round and index == 1:  # back to the tray first, then placed properly
-                script.append([_mouse(pygame.MOUSEBUTTONDOWN, start)])
-                script.append([_mouse(pygame.MOUSEBUTTONUP, (start[0], start[1] - 5))])
-            script.append([_mouse(pygame.MOUSEBUTTONDOWN, start)])
-            script.append([_mouse(pygame.MOUSEMOTION, target)])
-            script.append([_mouse(pygame.MOUSEBUTTONUP, target)])
-        script.append([])  # draw one frame with everything placed
-        script.append([_mouse(pygame.MOUSEBUTTONDOWN, DONE_RECT.center)])
-        self.queue = script
+                controller.press(start, self.now_ms())
+                controller.release((start[0], start[1] - 5), self.now_ms())
+            controller.press(start, self.now_ms())
+            controller.move(target)
+            controller.release(target, self.now_ms())
+            if full_round and index == 4:  # picked up again in the room and put back: 2 moves
+                grab = solid_point(controller, obj.id)
+                controller.press(grab, self.now_ms())
+                offset = (grab[0] - target[0], grab[1] - target[1])
+                fixed = to_canvas(obj.center)
+                controller.move((fixed[0] + offset[0], fixed[1] + offset[1]))
+                controller.release((fixed[0] + offset[0], fixed[1] + offset[1]), self.now_ms())
+        assert controller.press(DONE_POINT, self.now_ms()), "Done did not finish a complete room"
 
-    def placement(self, scene, objects, participant, block_index):
-        result = super().placement(scene, objects, participant, block_index)
-        self._shot(f"{scene.info.name}_placed")
-        if len(objects) == len(scene.info.objects):
-            self.scored_rounds += 1
-        return result
-
-    def transition(self):
-        super().transition()
-        self.rooms_done += 1
-
-    def _shot(self, name):
-        if self.screenshot_dir:
-            self.screenshot_dir.mkdir(parents=True, exist_ok=True)
-            pygame.image.save(self.screen, self.screenshot_dir / f"{name}.png")
+    def transition(self, seconds):
+        self.transitions += 1
 
 
 class _StopHere(QuitSession):
     pass
 
 
-def play(config: Config, assets: Path, data_dir: Path, participant: int, crash_after_room=False, shots=None):
-    game = ScriptedGame(config, assets, data_dir, participant=participant)
-    game.screenshot_dir = shots
-    if crash_after_room:
-        original = Session.finish_room
+def play(config: Config, assets: Path, data_dir: Path, participant: int, crash_after_room=False,
+         baseline=False) -> ScriptedDisplay:
+    display = ScriptedDisplay(participant)
+    experiment = Experiment(config, assets, data_dir, display, baseline=baseline, build="selftest")
+    if not crash_after_room:
+        experiment.run()
+        return display
+    original = Session.finish_room
 
-        def stop_after_save(self, *args, **kwargs):
-            rows = original(self, *args, **kwargs)
-            raise _StopHere
-            return rows
+    def stop_after_save(self, *args, **kwargs):
+        original(self, *args, **kwargs)
+        raise _StopHere
 
-        Session.finish_room = stop_after_save
-        try:
-            game.run()
-        except _StopHere:
-            pass
-        finally:
-            Session.finish_room = original
-    else:
-        game.run()
-    shown = game.shown
-    pygame.quit()
-    return shown
+    Session.finish_room = stop_after_save
+    try:
+        experiment.run()
+    except _StopHere:
+        pass
+    finally:
+        Session.finish_room = original
+    return display
 
 
-def read_rows(data_dir: Path, participant: int) -> list[dict]:
-    with open(data_dir / f"P{participant:03d}_results.csv", encoding="utf-8", newline="") as handle:
+def read_rows(path: Path) -> list[dict]:
+    with open(path, encoding="utf-8", newline="") as handle:
         return list(csv.DictReader(handle))
 
 
-def check_session(config: Config, assets: Path, data_dir: Path, shots=None) -> list[str]:
-    """Return a list of failures. An empty list means everything worked."""
+def check_assets(config: Config, assets: Path) -> list[str]:
+    """The pictures must not give locations away and targets must not overlap."""
     failures = []
+    names = [config.practice_room] + [n for s in config.room_sets for n in s]
+    labels: dict[str, str] = {}
+    for name in dict.fromkeys(names):
+        info = load_room(assets, name)
+        if len(info.objects) < (config.practice_objects if name == config.practice_room else 15):
+            failures.append(f"{name}: only {len(info.objects)} objects")
+        limit = 2 * config.tolerance_percent / 100 * info.width
+        for a, b in itertools.combinations(info.objects, 2):
+            if math.dist(a.center, b.center) < limit:
+                failures.append(f"{name}: {a.id} and {b.id} closer than twice the tolerance")
+        for obj in info.objects:
+            if not obj.icon.startswith("icons/"):
+                failures.append(f"{name}/{obj.id}: icon is not a separate neutral render")
+            icon = load_icon(assets / "rooms" / name / obj.icon)
+            if max(icon.size) != ICON_PX:
+                failures.append(f"{name}/{obj.id}: icon drawn at {icon.size}")
+            if obj.label in labels:
+                failures.append(f"{name}/{obj.id}: label '{obj.label}' also used in {labels[obj.label]}")
+            labels[obj.label] = name
+    return failures
+
+
+def check_session(config: Config, assets: Path, data_dir: Path) -> list[str]:
+    """Return a list of failures. An empty list means everything worked."""
+    failures = check_assets(config, assets)
 
     def expect(condition, message):
         if not condition:
             failures.append(message)
 
-    fast = dataclasses.replace(config, study_seconds=0.05, transition_seconds=0.05)
+    expected_rooms = sum(len(rooms) for rooms in config.room_sets)
 
     # An uninterrupted session.
-    shown = play(fast, assets, data_dir, 1, shots=shots)
-    rows = read_rows(data_dir, 1)
-    expected_rooms = sum(len(rooms) for rooms in config.room_sets)
+    display = play(config, assets, data_dir, 1)
+    rows = read_rows(data_dir / "P001_results.csv")
     expect(len(rows) == 15 * expected_rooms, f"expected {15 * expected_rooms} rows, got {len(rows)}")
     expect({r["session_resumed"] for r in rows} == {"0"}, "uninterrupted session marked as resumed")
     expect({r["condition"] for r in rows} == set(config.conditions), "not all conditions recorded")
     per_room: dict[str, int] = {}
+    swaps: dict[str, int] = {}
     for row in rows:
         per_room[row["room"]] = per_room.get(row["room"], 0) + int(row["score"])
-    expect(all(v == 14 for v in per_room.values()), f"each room should score 14/15, got {per_room}")
-    # One object per room goes back to the tray first: down/up in the tray, then the real drop.
+        swaps[row["room"]] = swaps.get(row["room"], 0) + int(row["swap"])
+    expect(all(v == 13 for v in per_room.values()), f"each room should score 13/15, got {per_room}")
+    expect(all(v == 1 for v in swaps.values()), f"each room should have 1 swap, got {swaps}")
     twice = [r for r in rows if r["moves"] == "2"]
-    expect(len(twice) == expected_rooms, f"tray return not counted: {len(twice)} rows with 2 moves")
+    expect(len(twice) == 2 * expected_rooms, f"moves not counted: {len(twice)} rows with 2 moves")
     expect(all(r["moves"] in ("1", "2") for r in rows), "unexpected move count")
     expect(all(r["placement_order"] for r in rows), "missing placement order")
+    expect(all(r["filler_answered"] == "5" and r["filler_correct"] == "4" for r in rows)
+           or config.retention_seconds <= 0, "filler results not saved")
+    expect(display.transitions == expected_rooms, f"{display.transitions} transitions shown")
 
     # Nothing shown on any screen may reveal a condition.
-    labels = {f"condition {c}".lower() for c in config.conditions} | set(config.conditions)
-    leaks = [t for t in shown if t in labels or "condition" in t.lower()]
+    shown = display.shown
+    leaks = [t for t in shown if t in set(config.conditions) or "condition" in t.lower()]
     expect(not leaks, f"condition shown on screen: {leaks}")
-    expect("Please wait for the experimenter" in shown, "experimenter pause was not shown")
-
-    # Personal details: results contain the study number only.
+    expect(PAUSE_TEXT in shown, "experimenter pause was not shown")
     header = set(rows[0])
     expect(not {"name", "email", "birthdate", "age"} & header, "personal detail column in results")
 
     # Crash after the first room, then resume.
-    play(fast, assets, data_dir, 2, crash_after_room=True)
-    first = read_rows(data_dir, 2)
+    play(config, assets, data_dir, 2, crash_after_room=True)
+    first = read_rows(data_dir / "P002_results.csv")
     expect(len(first) == 15, f"crash should leave 15 saved rows, got {len(first)}")
-    expect(not Session(fast, data_dir, 2).is_complete(), "crashed session reported as complete")
-    play(fast, assets, data_dir, 2)
-    final = read_rows(data_dir, 2)
+    expect(not Session(config, data_dir, 2).is_complete(), "crashed session reported as complete")
+    play(config, assets, data_dir, 2)
+    final = read_rows(data_dir / "P002_results.csv")
     expect(len(final) == 15 * expected_rooms, f"resume left {len(final)} rows")
     expect(len({(r["block"], r["room"], r["object"]) for r in final}) == len(final), "resume duplicated rows")
     expect(any(r["session_resumed"] == "1" for r in final), "resumed rows are not marked")
-    expect(Session(fast, data_dir, 2).is_complete(), "resumed session not marked complete")
+    expect(Session(config, data_dir, 2).is_complete(), "resumed session not marked complete")
     before = (data_dir / "P002_results.csv").read_bytes()
-    Session(fast, data_dir, 2)
+    Session(config, data_dir, 2)
     expect((data_dir / "P002_results.csv").read_bytes() == before, "reopening changed finished data")
+
+    # The no-study baseline group: separate files, no study, no pause, no condition.
+    display = play(config, assets, data_dir, 3, baseline=True)
+    base = read_rows(data_dir / "B003_results.csv")
+    expect(len(base) == 15 * expected_rooms, f"baseline wrote {len(base)} rows")
+    expect({r["condition"] for r in base} == {"baseline"}, "baseline rows carry a condition")
+    expect({r["study_ms"] for r in base} == {"0"}, "baseline participants saw the study room")
+    expect(PAUSE_TEXT not in display.shown, "baseline session paused for noise")
+    expect(not (data_dir / "P003_results.csv").exists(), "baseline wrote a participant file")
     return failures
 
 

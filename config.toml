@@ -10,14 +10,18 @@ participants_on_run_sheet = 35
 
 [timing]
 study_seconds = 30
+# Filled delay between study and test, in seconds: quick true/false sums with no
+# spatial content. Set to 0 to go straight from the full room to the empty room.
+retention_seconds = 30
 transition_seconds = 3
 
 [scoring]
 # An object scores 1 within this distance of its spot, as a percent of room width.
+# Continuous distance and swap errors are recorded as well.
 tolerance_percent = 5
 
 [practice]
-# Test build only: real participants need a separate practice room, because this
-# one shows them part of a scored room.
-room = "kitchen"
-objects = 3
+# A separate room whose objects never appear in the scored rooms.
+room = "hallway"
+objects = 5
+retention_seconds = 10

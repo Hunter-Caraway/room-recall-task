@@ -15,10 +15,12 @@ from pathlib import Path
 from .schedule import Block, build_schedule
 
 COLUMNS = [
-    "participant", "session_resumed", "block", "condition", "room", "room_order_in_block",
-    "object", "correct_x", "correct_y", "placed_x", "placed_y", "distance_pct",
-    "tolerance_pct", "score", "placement_order", "first_placed_ms", "last_placed_ms",
-    "moves", "room_finished_ms", "study_ms", "blink_frame_ms", "room_width_px",
+    "participant", "baseline", "session_resumed", "block", "condition", "room",
+    "room_order_in_block", "object", "label", "correct_x", "correct_y", "placed_x", "placed_y",
+    "distance_pct", "tolerance_pct", "score", "nearest_other", "nearest_other_distance_pct",
+    "swap", "placement_order", "first_placed_ms", "last_placed_ms", "moves",
+    "room_finished_ms", "study_ms", "study_end_frame_ms", "study_dropped_frames",
+    "retention_ms", "filler_answered", "filler_correct", "room_width_px", "icon_px",
     "condition_order", "room_order", "build",
 ]
 
@@ -34,10 +36,11 @@ def _atomic_write(path: Path, text: str) -> None:
 
 
 class ParticipantStore:
-    def __init__(self, data_dir: Path, participant: int):
+    def __init__(self, data_dir: Path, participant: int, prefix: str = "P"):
+        """prefix is "P" for participants and "B" for the no-study baseline group."""
         self.participant = participant
-        self.csv_path = Path(data_dir) / f"P{participant:03d}_results.csv"
-        self.state_path = Path(data_dir) / f"P{participant:03d}_state.json"
+        self.csv_path = Path(data_dir) / f"{prefix}{participant:03d}_results.csv"
+        self.state_path = Path(data_dir) / f"{prefix}{participant:03d}_state.json"
 
     def load_state(self) -> dict | None:
         if not self.state_path.exists():

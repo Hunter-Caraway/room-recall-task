@@ -1,2 +1,7 @@
-pygame-ce==2.5.8
+# The task runs under PsychoPy 2026.2.5 on Python 3.11 (PsychoPy Standalone on the lab PC).
+# For development on Linux, see README.md: psychopy is installed with --no-deps plus this list.
+psychopy==2026.2.5
+pyglet==1.5.27
+pillow
+numpy
 pytest==8.4.2

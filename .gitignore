@@ -8,3 +8,5 @@ data/
 build/
 dist/
 *.spec
+.venv-psychopy/
+selftest.log

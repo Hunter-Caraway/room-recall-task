@@ -1,0 +1,42 @@
+name: Package for the Windows lab PC
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      # PsychoPy Standalone on the lab PC uses Python 3.11, so test with the same.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install test dependencies
+        run: pip install -r requirements-test.txt
+      - name: Test the logic
+        run: python -m pytest -q
+      # The self-test plays whole scripted sessions with no window. It does not
+      # need PsychoPy, and GitHub's Windows machines have no graphics card, so the
+      # PsychoPy window itself is checked on the lab PC with Smoke Test.bat.
+      - name: Self-test on Windows
+        run: python run_task.py --self-test
+      - name: Build the lab folder
+        shell: pwsh
+        run: |
+          $out = "MemoryTask"
+          New-Item -ItemType Directory $out | Out-Null
+          Copy-Item -Recurse assets, src $out
+          Copy-Item run_task.py, config.toml, README.md $out
+          Copy-Item docs\LAB_CHECKLIST.md $out
+          Copy-Item windows\*.bat $out
+          "$(git rev-parse --short HEAD) $(Get-Date -Format yyyy-MM-dd)" | Out-File -Encoding ascii "$out\VERSION"
+          Get-ChildItem -Recurse -Include __pycache__ $out | Remove-Item -Recurse -Force
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MemoryTask-Windows
+          path: MemoryTask/
+          retention-days: 30
