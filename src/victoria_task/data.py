@@ -17,11 +17,19 @@ from .schedule import Block, build_schedule
 COLUMNS = [
     "participant", "baseline", "session_resumed", "block", "condition", "room",
     "room_order_in_block", "object", "label", "correct_x", "correct_y", "placed_x", "placed_y",
-    "distance_pct", "tolerance_pct", "score", "nearest_other", "nearest_other_distance_pct",
-    "swap", "placement_order", "first_placed_ms", "last_placed_ms", "moves",
-    "room_finished_ms", "study_ms", "study_end_frame_ms", "study_dropped_frames",
-    "retention_ms", "filler_answered", "filler_correct", "room_width_px", "icon_px",
-    "condition_order", "room_order", "build",
+    "distance_pct", "distance_px", "tolerance_pct", "score", "nearest_other",
+    "nearest_other_distance_pct", "swap", "placement_order", "first_pickup_ms",
+    "first_placed_ms", "placement_latency_ms", "last_placed_ms", "held_ms", "correction_ms",
+    "moves", "reconstruction_ms", "study_ms", "study_end_frame_ms", "study_dropped_frames",
+    "retention_ms", "filler_answered", "filler_correct", "filler_mean_rt_ms", "room_width_px",
+    "icon_px", "condition_order", "room_order", "build",
+]
+
+# Manipulation checks after each block: one row per digit-span trial, per span
+# score and per slider.
+CHECK_COLUMNS = [
+    "participant", "session_resumed", "block", "condition", "measure", "trial", "length",
+    "sequence", "response", "correct", "value", "first_click_ms", "rt_ms", "build",
 ]
 
 
@@ -41,6 +49,7 @@ class ParticipantStore:
         self.participant = participant
         self.csv_path = Path(data_dir) / f"{prefix}{participant:03d}_results.csv"
         self.state_path = Path(data_dir) / f"{prefix}{participant:03d}_state.json"
+        self.checks_path = Path(data_dir) / f"{prefix}{participant:03d}_checks.csv"
 
     def load_state(self) -> dict | None:
         if not self.state_path.exists():
@@ -54,38 +63,49 @@ class ParticipantStore:
     def has_session(self) -> bool:
         return self.state_path.exists()
 
-    def _read_rows(self) -> list[dict]:
-        if not self.csv_path.exists():
+    @staticmethod
+    def _read(path: Path) -> list[dict]:
+        if not path.exists():
             return []
-        with open(self.csv_path, encoding="utf-8", newline="") as handle:
+        with open(path, encoding="utf-8", newline="") as handle:
             return list(csv.DictReader(handle))
+
+    def _read_rows(self) -> list[dict]:
+        return self._read(self.csv_path)
+
+    @staticmethod
+    def _write(path: Path, columns: list[str], rows: list[dict]) -> None:
+        buffer = io.StringIO(newline="")
+        writer = csv.DictWriter(buffer, fieldnames=columns, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+        _atomic_write(path, buffer.getvalue())
 
     def save_room(self, rows: list[dict], state: dict) -> None:
         """Save one finished room. Rows go first, so a crash between the two
         writes is healed on resume by discarding rows beyond the saved state."""
-        existing = self._read_rows()
-        buffer = io.StringIO(newline="")
-        writer = csv.DictWriter(buffer, fieldnames=COLUMNS, lineterminator="\n")
-        writer.writeheader()
-        writer.writerows(existing)
-        writer.writerows(rows)
-        _atomic_write(self.csv_path, buffer.getvalue())
+        self._write(self.csv_path, COLUMNS, self._read_rows() + rows)
+        self.save_state(state)
+
+    def save_checks(self, rows: list[dict], state: dict) -> None:
+        """Save one block's manipulation checks, rows first as in save_room."""
+        self._write(self.checks_path, CHECK_COLUMNS, self._read(self.checks_path) + rows)
         self.save_state(state)
 
     def save_state(self, state: dict) -> None:
         _atomic_write(self.state_path, json.dumps(state, indent=2))
 
-    def reconcile(self, finished_keys: set[tuple[str, str]]) -> None:
-        """Drop rows for any (block, room) the state file does not list as finished."""
+    def reconcile(self, finished_keys: set[tuple[str, str]], checked_blocks: set[str] = frozenset()) -> None:
+        """Drop rows for any (block, room), or block of checks, the state file does
+        not list as finished."""
         rows = self._read_rows()
         kept = [r for r in rows if (r["block"], r["room"]) in finished_keys]
-        if len(kept) == len(rows):
-            return
-        buffer = io.StringIO(newline="")
-        writer = csv.DictWriter(buffer, fieldnames=COLUMNS, lineterminator="\n")
-        writer.writeheader()
-        writer.writerows(kept)
-        _atomic_write(self.csv_path, buffer.getvalue())
+        if len(kept) != len(rows):
+            self._write(self.csv_path, COLUMNS, kept)
+        checks = self._read(self.checks_path)
+        kept = [r for r in checks if r["block"] in checked_blocks]
+        if len(kept) != len(checks):
+            self._write(self.checks_path, CHECK_COLUMNS, kept)
 
 
 def run_sheet_text(

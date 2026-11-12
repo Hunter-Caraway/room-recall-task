@@ -13,6 +13,7 @@ os.environ.setdefault("PYGAME_HIDE_SUPPORT_PROMPT", "1")
 
 import pygame
 
+from .checks import CONTINUE_RECT, SLIDER_LEFT, SLIDER_RIGHT, SLIDER_Y, SliderController
 from .filler import FillerResult, Problem
 from .flow import QuitSession
 from .layout import CANVAS, DONE_RECT, ROOM_ORIGIN, ROOM_SIZE, TRAY_HEIGHT, TRAY_TOP, Icon, PlacementController
@@ -45,8 +46,9 @@ class PygameDisplay:
         self.assets = Path(assets)
         self.clock = pygame.time.Clock()
         self.fonts = {"title": pygame.font.Font(None, 60), "body": pygame.font.Font(None, 40),
-                      "muted": pygame.font.Font(None, 36), "entry": pygame.font.Font(None, 60)}
-        self.colors = {"title": TEXT, "body": TEXT, "muted": MUTED, "entry": ENTRY}
+                      "muted": pygame.font.Font(None, 36), "entry": pygame.font.Font(None, 60),
+                      "digit": pygame.font.Font(None, 200)}
+        self.colors = {"title": TEXT, "body": TEXT, "muted": MUTED, "entry": ENTRY, "digit": TEXT}
         self.screenshots = screenshots
         self._shot_count = 0
         self.rooms: dict[str, dict] = {}
@@ -181,20 +183,23 @@ class PygameDisplay:
         result = FillerResult()
         deadline = self.now_ms() + seconds * 1000
         index = 0
+        shown_at = None  # when the current sum first appeared
         shot = True
         self.events()
         while self.now_ms() < deadline:
             problem = items[index % len(items)]
             self._draw_lines([(problem.text, "title"), ("Y = right      N = wrong", "muted")])
             pygame.display.flip()
+            if shown_at is None:
+                shown_at = self.now_ms()
             if shot:
                 self.screenshot("filler")
                 shot = False
-            for kind, value, _ in self.events():
+            for kind, value, at in self.events():
                 if kind == "key" and value in ("y", "n"):
-                    result.answered += 1
-                    result.correct += int((value == "y") == problem.is_true)
+                    result.answer(problem, value == "y", at - shown_at)
                     index += 1
+                    shown_at = None
                     break
             self.clock.tick(FPS)
         return result
@@ -262,6 +267,79 @@ class PygameDisplay:
             if not shot and t > 0.5:
                 self.screenshot("transition")
                 shot = True
+            self.clock.tick(FPS)
+
+    # ------------------------------------------------------------ manipulation checks
+    def _hold(self, lines, ms: int) -> None:
+        """Show lines for ms. Keys pressed meanwhile are dropped."""
+        started = self.now_ms()
+        while self.now_ms() - started < ms:
+            self._draw_lines(lines)
+            pygame.display.flip()
+            self.events()
+            self.clock.tick(FPS)
+
+    def digit_span(self, digits: list[int], digit_ms: int, gap_ms: int) -> tuple[str, int]:
+        self._hold([("+", "digit")], 1000)
+        for digit in digits:
+            self._hold([(str(digit), "digit")], digit_ms)
+            self._hold([("", "digit")], gap_ms)
+        text = ""
+        shown_at = None
+        shot = True
+        while True:
+            self._draw_lines([
+                ("Type the numbers in reverse order, then press Enter", "title"),
+                (" ".join(text) or "_", "entry"),
+                ("Backspace fixes a mistake", "muted"),
+            ])
+            pygame.display.flip()
+            if shown_at is None:
+                shown_at = self.now_ms()
+            if shot:
+                self.screenshot("digit_span")
+                shot = False
+            for kind, value, at in self.events():
+                if kind == "digit" and len(text) < 12:
+                    text += value
+                elif kind == "key" and value == "backspace":
+                    text = text[:-1]
+                elif kind == "key" and value == "return" and text:
+                    return text, at - shown_at
+            self.clock.tick(FPS)
+
+    def slider(self, question: str, low: str, high: str, controller: SliderController) -> None:
+        self.events()
+        shot = True
+        button = pygame.Rect(CONTINUE_RECT)
+        while True:
+            for kind, value, at in self.events():
+                if kind == "press":
+                    if controller.press(value, at):
+                        return
+                elif kind == "move":
+                    controller.move(value, at)
+                elif kind == "release":
+                    controller.release(value, at)
+            self.screen.fill(BG)
+            title = self.fonts["title"].render(question, True, TEXT)
+            self.screen.blit(title, title.get_rect(center=(CANVAS[0] // 2, SLIDER_Y - 170)))
+            pygame.draw.line(self.screen, MUTED, (SLIDER_LEFT, SLIDER_Y), (SLIDER_RIGHT, SLIDER_Y), 6)
+            for x in (SLIDER_LEFT, SLIDER_RIGHT):
+                pygame.draw.line(self.screen, MUTED, (x, SLIDER_Y - 18), (x, SLIDER_Y + 18), 4)
+            for text, x in ((low, SLIDER_LEFT), (high, SLIDER_RIGHT)):
+                label = self.fonts["muted"].render(text, True, MUTED)
+                self.screen.blit(label, label.get_rect(midtop=(x, SLIDER_Y + 36)))
+            if controller.value is not None:
+                pygame.draw.circle(self.screen, ENTRY, (round(controller.x_for(controller.value)), SLIDER_Y), 18)
+            ready = controller.value is not None
+            pygame.draw.rect(self.screen, BUTTON if ready else BUTTON_OFF, button, border_radius=10)
+            label = self.fonts["body"].render("Continue", True, TEXT if ready else MUTED)
+            self.screen.blit(label, label.get_rect(center=button.center))
+            pygame.display.flip()
+            if shot:
+                self.screenshot("slider")
+                shot = False
             self.clock.tick(FPS)
 
     # ------------------------------------------------------------ helpers

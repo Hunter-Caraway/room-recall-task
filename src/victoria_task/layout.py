@@ -153,11 +153,13 @@ class PlacementController:
             self.grab = (point[0] - cx, point[1] - cy)
             self.stacking.remove(picked)
             self.dragging = picked
+            self.round.pick_up(picked, now_ms)
             return False
         picked = self._tray_hit(point)
         if picked:
             self.grab = (0.0, 0.0)
             self.dragging = picked
+            self.round.pick_up(picked, now_ms)
         return False
 
     def release(self, point: tuple[float, float], now_ms: int) -> None:

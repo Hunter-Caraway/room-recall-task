@@ -62,8 +62,36 @@ ROUND2 = [
     "food_lychee_01", "wooden_broom", "trashbag", "planter_box_01", "brass_diya_lantern",
 ]
 
+# Round 3: bedroom and garage, a more crowded living room, three arrangements each.
+ROUND3 = [
+    # bedroom
+    "GothicBed_01", "old_bed_frame", "vintage_day_bed", "GothicCommode_01", "chinese_commode",
+    "GreenChair_01", "SchoolDesk_01", "painted_wooden_chair_02",
+    "ceramic_vase_02", "ceramic_vase_04", "Lantern_01", "vintage_video_camera", "brass_vase_02",
+    "portable_cassette_player", "digital_wrist_watch", "standing_picture_frame_01",
+    "painted_wooden_stool", "folding_wooden_stool", "wooden_lantern_01",
+    # living room
+    "ArmChair_01", "sofa_03", "modern_coffee_table_02", "mid_century_lounge_chair", "brass_vase_03",
+    "sungka_board", "gaming_console", "television_02", "vintage_oil_lamp", "anthurium_botany_01",
+    "pachira_aquatica_01", "chinese_tea_table", "brass_vase_04",
+    # garage
+    "american_football", "garden_gnome", "tire_pump", "metal_toolbox", "Megaphone_01",
+    "steel_frame_shelves_01", "steel_frame_shelves_02", "steel_frame_shelves_03", "worn_metal_rack",
+    "metal_tool_chest", "WoodenTable_03", "tool_cart", "bench_vice_01", "ladder_sectioned_01",
+    "Barrel_02", "plastic_crate_01", "plastic_crate_02", "plastic_crate_03", "compost_bags",
+    "compost_bag_02", "garden_hose_wall_mounted_01", "old_tyre", "metal_jerrycan", "plastic_jerrycan",
+    "spray_paint_bottles", "cleaner_tin_01", "cement_bag", "rusted_spade_01", "power_box_01",
+    "mounted_fluorescent_lights", "hanging_industrial_lamp", "rollershutter_door",
+    "multi_cleaner_5_litre", "can_rusted", "leather_cleaner_can", "lubricant_spray",
+    "measuring_tape_01", "Drill_01", "wooden_hammer_01", "handsaw_wood", "seeding_tray_01",
+    "planter_box_02", "garden_sprinkler_01", "trowel_01", "small_oil_can_01",
+    "plastic_monobloc_chair_01", "wooden_crate_02", "old_military_crate", "dartboard", "oil_tin",
+    "wooden_stool_02",
+]
+
 ALL_MODELS = sorted(set(
     FURNITURE + KITCHEN_SCORED + KITCHEN_CLUTTER + LIVING_SCORED + LIVING_CLUTTER + EXTRA_CLUTTER + ROUND2
+    + ROUND3
 ))
 
 TEXTURES = [
@@ -71,5 +99,8 @@ TEXTURES = [
     "long_white_tiles", "marble_01", "oak_veneer_01", "painted_plaster_wall", "white_plaster_02",
     "fabric_pattern_07", "poly_wool_herringbone", "caban", "plank_flooring_02",
     "patterned_terracotta_tiling",
+    # round 3
+    "garage_floor", "painted_concrete", "concrete_block_wall", "wood_floor", "wool_boucle",
+    "quatrefoil_jacquard_fabric",
 ]
 HDRIS = ["symmetrical_garden_02", "cloudy_vondelpark"]

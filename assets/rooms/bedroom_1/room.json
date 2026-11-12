@@ -1,0 +1,97 @@
+{
+  "room": "bedroom_1",
+  "width": 1600,
+  "height": 900,
+  "objects": [
+    {
+      "id": "binoculars",
+      "label": "binoculars",
+      "file": "objects/binoculars.png",
+      "icon": "icons/binoculars.png",
+      "center": [
+        655.0,
+        479.0
+      ],
+      "size": [
+        62,
+        32
+      ],
+      "visible_fraction": 0.983
+    },
+    {
+      "id": "vintage_video_camera",
+      "label": "video camera",
+      "file": "objects/vintage_video_camera.png",
+      "icon": "icons/vintage_video_camera.png",
+      "center": [
+        1388.0,
+        291.5
+      ],
+      "size": [
+        60,
+        63
+      ],
+      "visible_fraction": 0.993
+    },
+    {
+      "id": "Lantern_01",
+      "label": "lantern",
+      "file": "objects/Lantern_01.png",
+      "icon": "icons/Lantern_01.png",
+      "center": [
+        1049.0,
+        825.0
+      ],
+      "size": [
+        46,
+        112
+      ],
+      "visible_fraction": 0.973
+    },
+    {
+      "id": "rubber_duck_toy",
+      "label": "rubber duck",
+      "file": "objects/rubber_duck_toy.png",
+      "icon": "icons/rubber_duck_toy.png",
+      "center": [
+        579.5,
+        267.0
+      ],
+      "size": [
+        37,
+        44
+      ],
+      "visible_fraction": 0.982
+    },
+    {
+      "id": "carved_wooden_elephant",
+      "label": "wooden elephant",
+      "file": "objects/carved_wooden_elephant.png",
+      "icon": "icons/carved_wooden_elephant.png",
+      "center": [
+        1025.0,
+        389.0
+      ],
+      "size": [
+        56,
+        50
+      ],
+      "visible_fraction": 0.981
+    },
+    {
+      "id": "brass_vase_02",
+      "label": "brass vase",
+      "file": "objects/brass_vase_02.png",
+      "icon": "icons/brass_vase_02.png",
+      "center": [
+        1193.5,
+        657.5
+      ],
+      "size": [
+        37,
+        89
+      ],
+      "visible_fraction": 0.972
+    }
+  ]
+}

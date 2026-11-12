@@ -1,0 +1,97 @@
+{
+  "room": "living_room_1",
+  "width": 1600,
+  "height": 900,
+  "objects": [
+    {
+      "id": "chess_set",
+      "label": "chess set",
+      "file": "objects/chess_set.png",
+      "icon": "icons/chess_set.png",
+      "center": [
+        636.5,
+        645.5
+      ],
+      "size": [
+        85,
+        43
+      ],
+      "visible_fraction": 0.988
+    },
+    {
+      "id": "horse_statue_01",
+      "label": "horse statue",
+      "file": "objects/horse_statue_01.png",
+      "icon": "icons/horse_statue_01.png",
+      "center": [
+        462.5,
+        272.5
+      ],
+      "size": [
+        41,
+        63
+      ],
+      "visible_fraction": 0.969
+    },
+    {
+      "id": "Ukulele_01",
+      "label": "ukulele",
+      "file": "objects/Ukulele_01.png",
+      "icon": "icons/Ukulele_01.png",
+      "center": [
+        982.5,
+        612.0
+      ],
+      "size": [
+        157,
+        62
+      ],
+      "visible_fraction": 0.976
+    },
+    {
+      "id": "boombox",
+      "label": "boombox",
+      "file": "objects/boombox.png",
+      "icon": "icons/boombox.png",
+      "center": [
+        462.5,
+        515.0
+      ],
+      "size": [
+        95,
+        60
+      ],
+      "visible_fraction": 0.977
+    },
+    {
+      "id": "concrete_cat_statue",
+      "label": "cat statue",
+      "file": "objects/concrete_cat_statue.png",
+      "icon": "icons/concrete_cat_statue.png",
+      "center": [
+        1143.5,
+        487.5
+      ],
+      "size": [
+        31,
+        57
+      ],
+      "visible_fraction": 0.973
+    },
+    {
+      "id": "wicker_basket_01",
+      "label": "wicker basket",
+      "file": "objects/wicker_basket_01.png",
+      "icon": "icons/wicker_basket_01.png",
+      "center": [
+        1321.5,
+        651.5
+      ],
+      "size": [
+        157,
+        73
+      ],
+      "visible_fraction": 0.966
+    }
+  ]
+}

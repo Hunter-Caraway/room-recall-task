@@ -1,17 +1,19 @@
 """Deterministic assignment of condition order and room sets to a participant."""
 from __future__ import annotations
 
+import random
 from dataclasses import dataclass
 
 
 def balanced_latin_square(n: int) -> list[list[int]]:
-    """Return a Williams balanced Latin square for an even number of conditions.
+    """Return a Williams balanced Latin square.
 
-    Each condition appears once per position, and each condition directly
-    follows every other condition equally often across the rows.
+    Each condition appears equally often in each position, and each condition
+    directly follows every other condition equally often across the rows. An
+    even n needs n rows. An odd n needs 2n rows: the square plus each row reversed.
     """
-    if n < 1 or n % 2:
-        raise ValueError("balanced_latin_square needs a positive even n")
+    if n < 1:
+        raise ValueError("balanced_latin_square needs at least one condition")
     first: list[int] = []
     low, high = 0, n - 1
     for i in range(n):
@@ -21,7 +23,10 @@ def balanced_latin_square(n: int) -> list[list[int]]:
         else:
             first.append(high)
             high -= 1
-    return [[(value + row) % n for value in first] for row in range(n)]
+    square = [[(value + row) % n for value in first] for row in range(n)]
+    if n % 2:
+        square += [list(reversed(row)) for row in square]
+    return square
 
 
 @dataclass(frozen=True)
@@ -36,8 +41,10 @@ def build_schedule(
 ) -> list[Block]:
     """Build a participant's blocks.
 
-    Room sets rotate independently of condition order: over n x n participants,
-    every condition order is paired with every room rotation exactly once.
+    Room sets rotate independently of condition order: over len(square) x n
+    participants, every condition order is paired with every room-set rotation
+    exactly once. Within a block the room order is shuffled, repeatably for a
+    given participant, so no room type always comes first.
     """
     if participant < 1:
         raise ValueError("participant number must be 1 or higher")
@@ -46,13 +53,11 @@ def build_schedule(
         raise ValueError("need exactly one room set per condition")
     square = balanced_latin_square(n)
     index = participant - 1
-    order = square[index % n]
-    rotation = (index // n) % n
-    return [
-        Block(
-            index=position + 1,
-            condition=conditions[condition_index],
-            rooms=tuple(room_sets[(position + rotation) % n]),
-        )
-        for position, condition_index in enumerate(order)
-    ]
+    order = square[index % len(square)]
+    rotation = (index // len(square)) % n
+    blocks = []
+    for position, condition_index in enumerate(order):
+        rooms = list(room_sets[(position + rotation) % n])
+        random.Random(f"rooms/{participant}/{position + 1}").shuffle(rooms)
+        blocks.append(Block(index=position + 1, condition=conditions[condition_index], rooms=tuple(rooms)))
+    return blocks

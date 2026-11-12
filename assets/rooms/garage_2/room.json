@@ -1,0 +1,97 @@
+{
+  "room": "garage_2",
+  "width": 1600,
+  "height": 900,
+  "objects": [
+    {
+      "id": "american_football",
+      "label": "football",
+      "file": "objects/american_football.png",
+      "icon": "icons/american_football.png",
+      "center": [
+        1314.0,
+        381.5
+      ],
+      "size": [
+        64,
+        43
+      ],
+      "visible_fraction": 0.993
+    },
+    {
+      "id": "watering_can_metal_01",
+      "label": "watering can",
+      "file": "objects/watering_can_metal_01.png",
+      "icon": "icons/watering_can_metal_01.png",
+      "center": [
+        1053.5,
+        258.5
+      ],
+      "size": [
+        99,
+        43
+      ],
+      "visible_fraction": 0.985
+    },
+    {
+      "id": "garden_gnome",
+      "label": "garden gnome",
+      "file": "objects/garden_gnome.png",
+      "icon": "icons/garden_gnome.png",
+      "center": [
+        883.0,
+        383.5
+      ],
+      "size": [
+        44,
+        95
+      ],
+      "visible_fraction": 0.985
+    },
+    {
+      "id": "tire_pump",
+      "label": "tire pump",
+      "file": "objects/tire_pump.png",
+      "icon": "icons/tire_pump.png",
+      "center": [
+        643.5,
+        690.5
+      ],
+      "size": [
+        75,
+        165
+      ],
+      "visible_fraction": 0.973
+    },
+    {
+      "id": "metal_toolbox",
+      "label": "toolbox",
+      "file": "objects/metal_toolbox.png",
+      "icon": "icons/metal_toolbox.png",
+      "center": [
+        254.0,
+        448.5
+      ],
+      "size": [
+        104,
+        69
+      ],
+      "visible_fraction": 0.949
+    },
+    {
+      "id": "Megaphone_01",
+      "label": "megaphone",
+      "file": "objects/Megaphone_01.png",
+      "icon": "icons/Megaphone_01.png",
+      "center": [
+        1530.0,
+        440.0
+      ],
+      "size": [
+        120,
+        84
+      ],
+      "visible_fraction": 0.987
+    }
+  ]
+}

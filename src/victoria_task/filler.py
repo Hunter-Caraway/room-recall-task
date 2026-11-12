@@ -36,3 +36,13 @@ def problems(participant: int, block: int, room: str, count: int = 200) -> list[
 class FillerResult:
     answered: int = 0
     correct: int = 0
+    rt_total_ms: int = 0  # summed time from each sum appearing to its answer
+
+    def answer(self, problem: Problem, said_true: bool, rt_ms: int) -> None:
+        self.answered += 1
+        self.correct += int(said_true == problem.is_true)
+        self.rt_total_ms += rt_ms
+
+    @property
+    def mean_rt_ms(self) -> float | None:
+        return self.rt_total_ms / self.answered if self.answered else None

@@ -9,12 +9,13 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Protocol
 
+from .checks import SLIDER_INSTRUCTIONS, SPAN_INSTRUCTIONS, DigitSpan, SliderAnswer, SliderController, check_rows
 from .config import Config
 from .filler import FillerResult, Problem, problems
 from .layout import ICON_PX, Icon, PlacementController, load_icon
+from .schedule import Block
 from .session import PlacementRound, RoomInfo, RoomTiming, Session, load_room, tray_order
 
-PAUSE_TEXT = "Please wait for the experimenter"
 END_TEXT = "That's the end of the task. Thank you!"
 
 # A line of text and its style: "title", "body", "muted" or "entry".
@@ -41,6 +42,11 @@ class Display(Protocol):
     def placement(self, room: RoomInfo, controller: PlacementController) -> None:
         """Run drag-and-drop until the controller records Done."""
     def transition(self, seconds: float) -> None: ...
+    def digit_span(self, digits: list[int], digit_ms: int, gap_ms: int) -> tuple[str, int]:
+        """Show the digits one at a time, then collect the typed answer. Returns
+        (typed digits, ms from the answer screen appearing to Enter)."""
+    def slider(self, question: str, low: str, high: str, controller: SliderController) -> None:
+        """Run a 0-100 slider until the controller records Continue."""
 
 
 class Experiment:
@@ -66,7 +72,7 @@ class Experiment:
         return self.rooms[name]
 
     def all_room_names(self) -> list[str]:
-        names = [self.config.practice_room]
+        names = list(dict.fromkeys(self.config.practice_rooms))
         for room_set in self.config.room_sets:
             names += [n for n in room_set if n not in names]
         return names
@@ -90,6 +96,7 @@ class Experiment:
 
     def instructions(self, practice: bool, guessing: bool, retention: float) -> None:
         heading = "Practice room" if practice else "Next room"
+        remember = ("Remember where objects belong.", "body")
         if guessing:
             lines = [
                 (heading, "title"),
@@ -100,8 +107,8 @@ class Experiment:
         else:
             lines = [
                 (heading, "title"),
-                (f"You will see a room for {int(self.config.study_seconds)} seconds. "
-                 "Remember where everything is.", "body"),
+                remember,
+                (f"You will see a room for {int(self.config.study_seconds)} seconds.", "body"),
             ]
             if retention > 0:
                 lines.append(("Then you will check some quick sums: press Y if a sum is right, "
@@ -138,30 +145,51 @@ class Experiment:
             finished_ms=controller.finished_ms, study_ms=study_ms, study_end_frame_ms=end_frame_ms,
             study_dropped_frames=dropped, retention_ms=retention_ms,
             filler_answered=filler.answered, filler_correct=filler.correct, icon_px=ICON_PX,
+            filler_mean_rt_ms=filler.mean_rt_ms,
         )
         return round_, timing
 
+    def checks(self, session: Session, block: Block) -> None:
+        """Backward digit span, then the sliders. Saved as one block of rows."""
+        config = self.config
+        self.display.message(SPAN_INSTRUCTIONS, "space")
+        span = DigitSpan(session.participant, block.index, config.span_start, config.span_max,
+                         config.span_trials)
+        while (step := span.next_digits()) is not None:
+            length, trial, digits = step
+            response, rt_ms = self.display.digit_span(digits, config.span_digit_ms, config.span_gap_ms)
+            span.record(length, trial, digits, response, rt_ms)
+        answers = []
+        if config.slider_questions:
+            self.display.message(SLIDER_INSTRUCTIONS, "space")
+        for question_id, question, low, high in config.slider_questions:
+            controller = SliderController(self.display.now_ms())
+            self.display.slider(question, low, high, controller)
+            answers.append(SliderAnswer(question_id, controller.value, controller.first_click_ms,
+                                        controller.finished_ms))
+        session.finish_checks(block, check_rows(session.check_base(block), span, answers))
+
     def run(self) -> None:
         session = self.choose_session()
-        if not session.practice_done:
-            practice = self.room(self.config.practice_room)
-            self.play_room(session, practice.name, practice.objects[: self.config.practice_objects],
-                           0, practice=True)
-            session.mark_practice_done()  # practice results are never written to the data
-            self.display.transition(self.config.transition_seconds)
-        first_room = True
-        while (step := session.next_room()) is not None:
-            block, name, order = step
-            # Pause at each new block, and on the first room after any restart, so
-            # the experimenter can set the noise. Baseline sessions have no noise.
-            if not self.baseline and (session.starts_block() or first_room):
-                self.display.message([(PAUSE_TEXT, "title")], "f8")
-            first_room = False
-            info = self.room(name)
-            round_, timing = self.play_room(session, name, info.objects, block.index, practice=False)
-            session.finish_room(block, order, round_, timing)
-            if session.next_room() is not None:
+        # No experimenter pause between rooms or blocks. The experimenter changes the
+        # noise while the practice-room instructions for the next block are on screen.
+        for block in session.blocks:
+            if session.needs_practice(block):
+                practice = self.room(self.config.practice_room(block.index))
+                self.play_room(session, practice.name, practice.objects[: self.config.practice_objects],
+                               0, practice=True)
+                session.mark_practice_done(block)  # practice results are never written to the data
                 self.display.transition(self.config.transition_seconds)
+            left = session.rooms_left(block)
+            for position, (name, order) in enumerate(left):
+                info = self.room(name)
+                round_, timing = self.play_room(session, name, info.objects, block.index, practice=False)
+                session.finish_room(block, order, round_, timing)
+                last_of_session = block is session.blocks[-1] and position == len(left) - 1
+                if position < len(left) - 1 or not (session.needs_checks(block) or last_of_session):
+                    self.display.transition(self.config.transition_seconds)
+            if session.needs_checks(block):
+                self.checks(session, block)
         self.display.message([
             (END_TEXT, "title"),
             ("Please let the experimenter know you have finished.", "muted"),

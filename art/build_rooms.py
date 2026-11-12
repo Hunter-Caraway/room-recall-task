@@ -402,6 +402,47 @@ def sink(x0, x1, y0, y1, counter_z, stone):
         cylinder("tap_handle", tx + dx, ty, counter_z, counter_z + 0.05, 0.018, chrome)
 
 
+# ---------------------------------------------------------------- arrangements
+# Round 3: each room type has one set of furniture and clutter, a pool of spots, and
+# three arrangements. Arrangement k puts the same scored objects on different spots,
+# so an object never stands where it stood in another condition. Every spot is a
+# free patch of surface with clutter around it, and a spot not used in one
+# arrangement is still a free patch, so an empty patch in the empty room is no clue.
+ARRANGEMENT = 1
+MODE = "preview"
+
+
+def spot(x, y, drop=None, z=None, rot=0.0):
+    return {"x": x, "y": y, "drop": drop, "z": z, "rot": rot}
+
+
+def target(name, label, scale=1.0, pick=None, rot=0.0, rot_x=0.0, lift=0.0, icon_rot=0.0, icon_rot_x=0.0):
+    return {"name": name, "label": label, "scale": scale, "pick": pick, "rot": rot, "rot_x": rot_x,
+            "lift": lift, "icon_rot": icon_rot, "icon_rot_x": icon_rot_x}
+
+
+def place_targets(objects, spots, arrangements):
+    """Place each scored object on its spot for the current arrangement. In
+    --mode spots, mark every spot in the pool instead, to choose arrangements."""
+    if MODE == "spots":
+        mark = flat("spot_marker", (1.0, 0.05, 0.4), 0.4, emit=2.0)
+        for name, sp in spots.items():
+            z = sp["z"] if sp["z"] is not None else surface_below(sp["x"], sp["y"], sp["drop"] or 2.5)
+            bpy.ops.mesh.primitive_uv_sphere_add(radius=0.035, location=(sp["x"], sp["y"], z + 0.035))
+            ball = bpy.context.active_object
+            ball.data.materials.append(mark)
+            placed.append({"name": name, "meshes": [ball], "role": "scored", "label": name, "icon": {}})
+        return
+    chosen = arrangements[ARRANGEMENT - 1]
+    if len(set(chosen)) != len(chosen) or len(chosen) != len(objects):
+        raise SystemExit("arrangement must use one distinct spot per object")
+    for obj, spot_name in zip(objects, chosen):
+        sp = spots[spot_name]
+        place(obj["name"], sp["x"], sp["y"], z=sp["z"], drop=sp["drop"] or 2.5, rot=obj["rot"] + sp["rot"],
+              rot_x=obj["rot_x"], scale=obj["scale"], pick=obj["pick"], role="scored", label=obj["label"],
+              lift=obj["lift"], icon_rot=obj["icon_rot"], icon_rot_x=obj["icon_rot_x"])
+
+
 # ---------------------------------------------------------------- rooms
 def build_kitchen():
     shell(pbr("floor_terracotta", "patterned_terracotta_tiling", 0.9), paint("kitchen_wall", (0.76, 0.77, 0.68)),
@@ -518,6 +559,16 @@ def build_kitchen():
     place("plastic_broom", -half + 0.12, 0.9, z=0, rot=90, scale=0.85)
 
 
+LIVING_OBJECTS = [
+    target("chess_set", "chess set", scale=0.4, rot=10),
+    target("horse_statue_01", "horse statue", rot=60),
+    target("Ukulele_01", "ukulele", rot_x=90, rot=40, lift=0.02),
+    target("boombox", "boombox", scale=0.45),
+    target("concrete_cat_statue", "cat statue", scale=0.7, rot=-25, icon_rot=-25),
+    target("wicker_basket_01", "wicker basket", scale=0.8, rot=15),
+]
+
+
 def build_living_room():
     shell(pbr("floor_parquet", "herringbone_parquet", 1.4), paint("living_wall", (0.62, 0.68, 0.72)),
           window=(-0.3, 1.0, 1.0, 2.2), hdri="cloudy_vondelpark", hdri_rot=-40, sun=4.0, sun_rot=195,
@@ -558,49 +609,67 @@ def build_living_room():
     socket(1.0, 0.3)
     socket(half, 0.3, y=1.3, wall="right")
 
-    s = dict(role="scored")
     # Bookshelf shelves sit at z 0.11, 0.39, 0.67, 0.96, 1.28, 1.66 and 2.06; only those
     # below eye height (1.55 m) hold scored objects, so no shelf lip hides them.
-    place("boombox", -1.78, ROOM_BACK - 0.26, drop=0.3, scale=0.5, label="boombox", **s)
-    place("lambis_shell", -1.12, ROOM_BACK - 0.4, drop=0.9, scale=1.6, rot=200, label="seashell", **s)
-    place("filmstrip_projector_8mm", -1.85, ROOM_BACK - 0.3, drop=1.2, rot=90, scale=0.7, label="film projector",
-          icon_rot=90, **s)
-    place("mantel_clock_01", -1.25, ROOM_BACK - 0.3, drop=1.5, label="mantel clock", **s)
-    place("potted_plant_04", -0.05, ROOM_BACK - 0.05, drop=1.2, scale=1.1, label="small plant", **s)
-    place("binoculars", 0.72, ROOM_BACK - 0.06, drop=1.2, rot=10, scale=1.4, label="binoculars", **s)
-    place("chess_set", 1.24, ROOM_BACK - 0.36, drop=0.8, scale=0.4, rot=10, label="chess set", **s)
-    place("brass_candleholders", 1.9, ROOM_BACK - 0.3, drop=0.8, pick=["candleholder_02"], scale=0.6,
-          label="candleholder", **s)
-    place("standing_picture_frame_02", ROOM_W / 2 - 0.1, 1.12, drop=1.5, rot=-150, label="picture frame",
-          icon_rot=-90, **s)
-    place("Camera_01", -0.02, 0.66, drop=0.6, rot=25, label="camera", **s)
-    place("magnifying_glass_01", 0.42, 0.4, drop=0.6, rot_x=90, rot=-20, label="magnifying glass",
-          icon_rot_x=0, **s)
-    place("seadogs_compass", -0.48, 0.4, drop=0.6, rot=15, label="compass", **s)
-    place("Ukulele_01", 1.35, 0.25, drop=0.8, rot_x=90, rot=40, lift=0.02, label="ukulele", **s)
-    place("book_encyclopedia_set_01", -2.12, 0.85, drop=0.8, rot=90, scale=0.5, pick=["book01", "book02"])
-    place("horse_statue_01", -1.95, 0.75, drop=0.8, label="horse statue", rot=60, **s)
-    place("antique_ceramic_vase_01", 2.0, 0.45, z=0, scale=0.85, label="vase", **s)
+    s = {
+        "book_1": spot(-1.25, ROOM_BACK - 0.3, drop=0.6),
+        "book_2l": spot(-1.95, ROOM_BACK - 0.3, drop=0.9),
+        "book_3": spot(-1.3, ROOM_BACK - 0.3, drop=1.2),
+        "book_4l": spot(-2.0, ROOM_BACK - 0.3, drop=1.5),
+        "book_4r": spot(-1.2, ROOM_BACK - 0.3, drop=1.5),
+        "sill": spot(0.05, ROOM_BACK - 0.06, drop=1.2),
+        "sill_r": spot(0.75, ROOM_BACK - 0.06, drop=1.2),
+        "tv_l": spot(1.25, ROOM_BACK - 0.35, drop=0.8),
+        "tv_r": spot(1.92, ROOM_BACK - 0.3, drop=0.8),
+        "coffee_l": spot(-0.45, 0.45, drop=0.6),
+        "coffee_r": spot(0.52, 0.62, drop=0.6),
+        "ottoman": spot(1.3, 0.2, drop=0.8),
+        "side_top": spot(-2.02, 0.75, drop=0.8),
+        "wall_shelf": spot(ROOM_W / 2 - 0.1, 1.15, drop=1.5, rot=90),
+        "book_0": spot(-1.3, ROOM_BACK - 0.3, drop=0.3),
+        "coffee_m": spot(0.0, 0.78, drop=0.6),
+        "wall_shelf_2": spot(ROOM_W / 2 - 0.1, 0.85, drop=1.5),
+    }
+    arrangements = [
+        ["coffee_l", "book_4r", "coffee_r", "book_1", "tv_l", "ottoman"],
+        ["tv_r", "side_top", "book_0", "wall_shelf", "coffee_r", "book_2l"],
+        ["book_3", "sill_r", "coffee_m", "sill", "wall_shelf_2", "book_4l"],
+    ]
+    place_targets(LIVING_OBJECTS, s, arrangements)
 
-    place("book_encyclopedia_set_01", -1.62, ROOM_BACK - 0.28, drop=0.9, scale=0.7)
-    place("book_encyclopedia_set_01", -1.25, ROOM_BACK - 0.28, drop=0.3, scale=0.65, pick=["book01", "book02", "book03"])
-    place("office_notepads", -1.55, ROOM_BACK - 0.3, drop=0.6, pick=["a4_stack"], scale=0.8)
-    place("brass_goblets", -1.8, ROOM_BACK - 0.3, drop=1.5, scale=0.45)
+    # Unscored clutter, denser than round 2.
+    place("book_encyclopedia_set_01", -1.62, ROOM_BACK - 0.28, drop=0.9, scale=0.7, pick=["book01", "book02", "book03", "book04"])
+    place("book_encyclopedia_set_01", -1.75, ROOM_BACK - 0.28, drop=0.3, scale=0.65, pick=["book01", "book02", "book03"])
+    place("office_notepads", -1.55, ROOM_BACK - 0.3, drop=1.2, pick=["a4_stack"], scale=0.8)
+    place("mantel_clock_01", -1.6, ROOM_BACK - 0.3, drop=1.5, scale=0.9)
     place("book_encyclopedia_set_01", -1.55, ROOM_BACK - 0.28, drop=1.9, scale=0.8)
-    place("postcard_set_01", -1.8, ROOM_BACK - 0.35, drop=0.6, scale=0.55)
+    place("postcard_set_01", -1.65, ROOM_BACK - 0.35, drop=0.6, scale=0.55)
+    place("lambis_shell", -2.1, ROOM_BACK - 0.35, drop=0.6, scale=1.4, rot=200)
+    place("filmstrip_projector_8mm", -2.0, ROOM_BACK - 0.3, drop=1.2, rot=90, scale=0.6)
+    place("brass_goblets", -1.65, ROOM_BACK - 0.3, drop=1.2, scale=0.4)
     place("calathea_orbifolia_01", 0.42, ROOM_BACK - 0.06, drop=1.2, scale=0.25)
+    place("potted_plant_04", -0.3, ROOM_BACK - 0.05, drop=1.2, scale=1.0)
     place("throw_pillows_01", 0.55, -0.32, drop=1.0, pick=["pillow01"], rot=-10, scale=0.6)
     place("throw_pillows_01", -0.55, -0.32, drop=1.0, pick=["pillow02"], rot=10, scale=0.6)
-    place("office_notepads", -0.4, 0.74, drop=0.6, pick=["yellow_pad"], scale=0.8, rot=15)
-    place("tea_set_01", 0.3, 0.72, drop=0.6, pick=["saucer_circular_04"])
-    place("tea_set_01", 0.3, 0.72, drop=0.6, pick=["cup_small_02"])
-    place("round_spectacles", -0.38, 0.74, drop=0.65, rot=-20)
-    place("binder_notebook", 1.15, 0.35, drop=0.8, scale=0.55, rot=60)
-    place("book_encyclopedia_set_01", ROOM_W / 2 - 0.1, 1.36, drop=1.5, rot=90, scale=0.5, pick=["book01", "book02"])
-    place("wooden_bowl_02", ROOM_W / 2 - 0.1, 0.86, drop=1.5, scale=0.35)
-    place("office_notepads", 1.7, ROOM_BACK - 0.12, drop=0.8, pick=["a4_stack"], rot=0, scale=0.5)
+    place("office_notepads", -0.05, 0.74, drop=0.6, pick=["yellow_pad"], scale=0.8, rot=15)
+    place("tea_set_01", 0.05, 0.42, drop=0.6, pick=["saucer_circular_04"])
+    place("tea_set_01", 0.05, 0.42, drop=0.6, pick=["cup_small_02"])
+    place("round_spectacles", -0.15, 0.62, drop=0.65, rot=-20)
+    place("book_encyclopedia_set_01", 0.15, 0.75, drop=0.6, rot_x=90, rot=80, scale=0.45, pick=["book05"])
+    place("binder_notebook", -2.05, 0.7, drop=0.8, scale=0.4, rot=10)
+    place("brass_candleholders", 1.6, ROOM_BACK - 0.33, drop=0.8, pick=["candleholder_02"], scale=0.5)
+    place("office_notepads", 1.62, ROOM_BACK - 0.12, drop=0.8, pick=["a4_stack"], rot=0, scale=0.5)
+    place("standing_picture_frame_02", -2.05, 0.95, drop=0.8, rot=60, scale=0.8)
+    place("book_encyclopedia_set_01", -2.02, 1.05, drop=0.4, rot=90, scale=0.4, pick=["book03", "book04"])
     place("fancy_picture_frame_01", 1.55, ROOM_BACK - 0.015, z=1.45, scale=0.6)
+    place("hanging_picture_frame_01", -0.6, ROOM_BACK - 0.015, z=1.75, scale=0.45)
     place("potted_plant_01", -0.72, ROOM_BACK - 0.35, z=0, scale=0.75)
+    place("antique_ceramic_vase_01", 2.05, 0.45, z=0, scale=0.85)
+    place("cardboard_box_01", 0.95, ROOM_BACK - 0.25, z=0.018, scale=0.35, rot=-15)
+    place("ceramic_vase_03", -2.05, ROOM_BACK - 0.3, drop=0.3, scale=0.6)
+    place("book_encyclopedia_set_01", 1.2, 0.12, drop=0.8, rot_x=90, rot=-30, scale=0.4, pick=["book06"])
+    place("brass_vase_03", -0.05, ROOM_BACK - 0.06, drop=1.2, scale=1.2)
+    place("hanging_picture_frame_02", 2.3 - 0.015, 0.6, z=1.6, rot=-90, scale=0.45)
 
 
 def build_hallway():
@@ -644,12 +713,31 @@ def build_hallway():
     socket(0.45, 1.15)
     socket(0, 1.1, y=1.2, wall="right")
 
-    s = dict(role="scored")
-    place("fishermans_hat", -1.85, ROOM_BACK - 0.28, drop=1.0, rot=20, label="hat", **s)
-    place("vintage_flashlight", -1.25, ROOM_BACK - 0.28, drop=1.0, rot=80, label="flashlight", **s)
-    place("rubber_boots", 1.12, ROOM_BACK - 0.16, drop=0.8, pick=["boots_l", "boots_r"], label="boots", **s)
-    place("garden_gloves_01", 1.75, ROOM_BACK - 0.22, drop=1.0, rot=40, label="gloves", **s)
-    place("vintage_suitcase", -1.75, 0.75, z=0, pick=["suitcase_01"], rot=-15, label="suitcase", **s)
+    objects = [
+        target("fishermans_hat", "hat", rot=20),
+        target("vintage_flashlight", "flashlight", rot=80),
+        target("rubber_boots", "boots", pick=["boots_l", "boots_r"]),
+        target("garden_gloves_01", "gloves", rot=40),
+        target("vintage_suitcase", "suitcase", pick=["suitcase_01"], rot=-15),
+    ]
+    s = {
+        "bench_l": spot(-1.85, ROOM_BACK - 0.28, drop=1.0),
+        "bench_r": spot(-1.25, ROOM_BACK - 0.28, drop=1.0),
+        "rack_top_l": spot(0.8, ROOM_BACK - 0.16, drop=0.8),
+        "rack_top_r": spot(1.12, ROOM_BACK - 0.16, drop=0.8),
+        "rack_mid": spot(0.95, ROOM_BACK - 0.16, drop=0.4),
+        "console": spot(1.75, ROOM_BACK - 0.22, drop=1.0),
+        "floor_bench": spot(-1.75, 0.75, z=0),
+        "floor_right": spot(1.55, 0.65, z=0),
+        "floor_left": spot(-0.95, 0.55, z=0.012),
+        "mat": spot(-0.2, ROOM_BACK - 0.4, z=0.012),
+    }
+    arrangements = [
+        ["bench_l", "bench_r", "rack_top_r", "console", "floor_bench"],
+        ["console", "rack_mid", "floor_left", "bench_l", "floor_right"],
+        ["rack_top_l", "floor_right", "mat", "bench_r", "bench_l"],
+    ]
+    place_targets(objects, s, arrangements)
 
     place("wicker_basket_02", -1.25, ROOM_BACK - 0.3, z=0, scale=0.65)
     place("cardboard_box_01", 0.8, ROOM_BACK - 0.17, drop=0.8, scale=0.4, rot=90)
@@ -658,6 +746,217 @@ def build_hallway():
     place("book_encyclopedia_set_01", 0.97, ROOM_BACK - 0.16, drop=0.4, scale=0.7, pick=["book01", "book02", "book03"])
     place("hanging_picture_frame_03", 1.0, ROOM_BACK - 0.015, z=1.4, scale=0.6)
     place("fancy_picture_frame_01", -1.55, ROOM_BACK - 0.015, z=1.95, scale=0.45)
+
+
+BEDROOM_OBJECTS = [
+    target("binoculars", "binoculars", scale=1.4, rot=10),
+    target("vintage_video_camera", "video camera", scale=1.5, rot=-60, icon_rot=-60),
+    target("Lantern_01", "lantern", scale=0.9),
+    target("rubber_duck_toy", "rubber duck", scale=0.55, rot=-30, icon_rot=-30),
+    target("carved_wooden_elephant", "wooden elephant", scale=1.8, rot=-30, icon_rot=-30),
+    target("brass_vase_02", "brass vase", scale=0.55),
+]
+
+
+def build_bedroom():
+    shell(pbr("floor_wood", "wood_floor", 1.6), paint("bed_wall", (0.72, 0.66, 0.6)),
+          window=(0.15, 1.0, 1.0, 2.2), hdri="cloudy_vondelpark", hdri_rot=60, sun=4.5, sun_rot=200,
+          sill_depth=0.24)
+    camera(*ROOM_CAMERA[:2], lens=ROOM_CAMERA[2])
+    half = ROOM_W / 2
+    blind = flat("blind", (0.85, 0.82, 0.74), 0.9)
+    box("blind", 0.17, 0.98, ROOM_BACK - 0.03, ROOM_BACK, 1.85, 2.18, blind)
+    rug = pbr("bed_rug", "wool_boucle", 0.5, tint=(0.75, 0.68, 0.6), rough=0.95)
+    box("rug", -0.75, 1.15, -0.6, 1.1, 0, 0.015, rug)
+
+    # Bed with its head on the back wall, on the left, made up with a blanket.
+    place("old_bed_frame", -1.75, ROOM_BACK - 1.02, z=0, scale=(1.4, 1.0, 1.0))
+    top = surface_below(-1.75, 0.6, 1.0)
+    blanket = pbr("blanket", "wool_boucle", 0.3, tint=(0.45, 0.55, 0.62), rough=0.95)
+    sheet = flat("sheet", (0.88, 0.86, 0.82), 0.9)
+    box("mattress", -2.36 + 0.07, -1.14 - 0.07, ROOM_BACK - 1.95, ROOM_BACK - 0.08, top, top + 0.16, sheet)
+    box("blanket", -2.3, -1.12, ROOM_BACK - 1.98, ROOM_BACK - 0.6, top + 0.16, top + 0.2, blanket)
+    box("blanket_side", -1.14, -1.12, ROOM_BACK - 1.98, ROOM_BACK - 0.6, top - 0.1, top + 0.2, blanket)
+    box("blanket_fold", -2.3, -1.12, ROOM_BACK - 0.75, ROOM_BACK - 0.55, top + 0.2, top + 0.24, sheet)
+    place("throw_pillows_01", -1.75, ROOM_BACK - 0.3, drop=1.2, pick=["pillow01"], scale=0.85)
+    place("throw_pillows_01", -1.45, ROOM_BACK - 0.45, drop=1.2, pick=["pillow02"], scale=0.6, rot=15)
+    place("painted_wooden_nightstand", -0.5, ROOM_BACK - 0.28, z=0)
+    # Desk under the window; armchair in the front right corner.
+    place("SchoolDesk_01", 0.58, ROOM_BACK - 0.3, z=0, rot=180)
+    place("GreenChair_01", 1.6, 0.05, z=0.015, rot=35)
+    # Chest of drawers on the back wall, right; a wall shelf above the armchair.
+    place("GothicCommode_01", 1.68, ROOM_BACK - 0.3, z=0)
+    plank = pbr("plank", "oak_veneer_01", 0.9)
+    wall_shelf("wall_shelf", -0.95, -0.05, 1.32, 0.22, plank)
+    place("painted_wooden_stool", 0.1, -0.15, z=0.015)
+    footstool = place("Ottoman_01", 1.05, -0.15, z=0.015, rot=20, scale=0.45)
+    footstool_top = world_bbox(footstool["meshes"])[1].z
+    place("wicker_basket_02", -0.2, 1.15, z=0.015, pick=["wicker_basket_02_base"], scale=1.0, rot=20)
+    pendant(-0.2, 0.2, bottom=2.0, energy=14, scale=0.5)
+    place("fancy_picture_frame_01", -1.55, ROOM_BACK - 0.015, z=1.75, scale=0.55)
+    place("hanging_picture_frame_03", 1.68, ROOM_BACK - 0.015, z=1.6, scale=0.6)
+    place("ornate_mirror_01", half - 0.015, 1.35, z=1.35, rot=-90, scale=0.6)
+    socket(-0.85, 0.3)
+    socket(1.0, 0.3)
+
+    s = {
+        "night": spot(-0.52, ROOM_BACK - 0.33, drop=1.2),
+        "desk_l": spot(0.3, ROOM_BACK - 0.3, drop=1.2),
+        "desk_r": spot(0.82, ROOM_BACK - 0.3, drop=1.2),
+        "chest_l": spot(1.25, ROOM_BACK - 0.33, drop=1.6),
+        "chest_r": spot(2.08, ROOM_BACK - 0.33, drop=1.6),
+        "chest_m": spot(1.62, ROOM_BACK - 0.4, drop=1.6),
+        "sill": spot(0.58, ROOM_BACK - 0.06, drop=1.3),
+        "stool": spot(0.1, -0.15, drop=0.8),
+        "fold_stool": spot(1.05, -0.15, z=footstool_top),
+        "shelf_l": spot(-0.82, ROOM_BACK - 0.11, drop=1.5),
+        "shelf_r": spot(-0.25, ROOM_BACK - 0.11, drop=1.5),
+        "floor_desk": spot(1.0, 1.2, z=0.015),
+        "floor_chest": spot(1.3, 1.05, z=0.015),
+        "rug_front": spot(0.6, 0.0, z=0.015),
+        "rug_back": spot(0.75, 0.75, z=0.015),
+        "bed_foot": spot(-1.45, 0.55, drop=1.2),
+        "bed_side": spot(-2.0, 0.7, drop=1.2),
+        "floor_night": spot(-0.6, 1.05, z=0.015),
+    }
+    arrangements = [
+        ["night", "chest_r", "rug_front", "shelf_l", "desk_r", "floor_chest"],
+        ["desk_l", "bed_side", "chest_l", "floor_desk", "stool", "shelf_r"],
+        ["chest_m", "fold_stool", "sill", "bed_foot", "rug_back", "floor_night"],
+    ]
+    place_targets(BEDROOM_OBJECTS, s, arrangements)
+
+    # Clutter around every spot.
+    place("alarm_clock_01", -0.36, ROOM_BACK - 0.18, drop=1.2, rot=-20, scale=0.9)
+    place("book_encyclopedia_set_01", -0.68, ROOM_BACK - 0.2, drop=1.2, pick=["book01", "book02"], scale=0.45, rot=90)
+    place("desk_lamp_arm_01", 0.98, ROOM_BACK - 0.12, drop=1.2, rot=200, scale=0.7)
+    place("office_notepads", 0.56, ROOM_BACK - 0.42, drop=1.2, pick=["a4_stack"], scale=0.6, rot=8)
+    place("ceramic_vase_04", 1.44, ROOM_BACK - 0.18, drop=1.6, scale=0.8)
+    place("standing_picture_frame_01", 1.85, ROOM_BACK - 0.15, drop=1.6, rot=-80)
+    place("wooden_bowl_02", 1.86, ROOM_BACK - 0.45, drop=1.6, scale=0.45)
+    place("round_spectacles", 1.25, ROOM_BACK - 0.5, drop=1.6, rot=15)
+    place("postcard_set_01", 0.32, ROOM_BACK - 0.06, drop=1.3, scale=0.5)
+    place("potted_plant_04", 0.86, ROOM_BACK - 0.07, drop=1.3, scale=0.8)
+    place("book_encyclopedia_set_01", -0.55, ROOM_BACK - 0.1, drop=1.5, pick=["book01", "book02", "book03"], scale=0.45)
+    place("wooden_candlestick", -0.06, ROOM_BACK - 0.1, drop=1.5, scale=0.6)
+    place("binder_notebook", -1.7, 0.75, drop=1.2, scale=0.5, rot=80)
+    place("cardboard_box_01", 2.0, 1.15, z=0, scale=0.45, rot=10)
+    place("book_encyclopedia_set_01", 1.6, 1.12, z=0.015, scale=0.5, rot_x=90, pick=["book04", "book05", "book06"])
+    place("potted_plant_01", -0.95, 0.85, z=0, scale=0.45)
+    place("tea_set_01", 0.22, -0.05, drop=0.8, pick=["cup_small_02"])
+    place("cardboard_box_01", 0.45, 0.5, z=0.015, scale=0.35, rot=30)
+    place("hanging_picture_frame_01", -0.5, ROOM_BACK - 0.015, z=1.75, scale=0.5)
+    place("hanging_picture_frame_02", -2.3 + 0.015, 1.4, z=1.55, rot=90, scale=0.5)
+    place("cardboard_box_01", 0.75, ROOM_BACK - 0.3, z=0, scale=0.35, rot=-5)
+    place("book_encyclopedia_set_01", 0.32, ROOM_BACK - 0.3, z=0.0, scale=0.55, rot_x=90, rot=90, pick=["book02", "book03", "book04"])
+    place("potted_plant_02", 2.05, 1.05, z=0.015, scale=0.6)
+    place("office_notepads", 0.62, ROOM_BACK - 0.2, drop=1.2, pick=["yellow_pad"], scale=0.5, rot=-12)
+    place("brass_goblets", 2.0, ROOM_BACK - 0.2, drop=1.6, scale=0.35)
+
+
+GARAGE_OBJECTS = [
+    target("american_football", "football", scale=0.6, rot=20, icon_rot=20),
+    target("watering_can_metal_01", "watering can", scale=0.8, rot=70, icon_rot=70),
+    target("garden_gnome", "garden gnome", scale=0.55, rot=-15),
+    target("tire_pump", "tire pump", scale=0.8, rot=10),
+    target("metal_toolbox", "toolbox", scale=0.75, rot=-8),
+    target("Megaphone_01", "megaphone", scale=0.7, rot=-60, icon_rot=-60),
+]
+
+
+def build_garage():
+    shell(pbr("garage_floor", "garage_floor", 2.0), paint("garage_wall", (0.62, 0.63, 0.6)),
+          window=(0.55, 1.35, 1.35, 2.15), hdri="symmetrical_garden_02", hdri_rot=-70, sun=3.0, sun_rot=150,
+          ceiling_light=55.0, sill_depth=0.16)
+    camera(*ROOM_CAMERA[:2], lens=ROOM_CAMERA[2])
+    half = ROOM_W / 2
+    bpy.ops.object.light_add(type="AREA", location=(0.0, 0.4, ROOM_H - 0.05))
+    tube = bpy.context.active_object
+    tube.data.shape, tube.data.size, tube.data.size_y = "RECTANGLE", 1.2, 0.12
+    tube.data.energy = 120
+    tube.data.color = (0.95, 0.97, 1.0)
+    box("tube_housing", -0.62, 0.62, 0.32, 0.48, ROOM_H - 0.06, ROOM_H, flat("tube", (0.92, 0.93, 0.95), 0.3, emit=3.0))
+
+    # Back wall: tall steel shelves on the left, a workbench with a pegboard in the
+    # middle, a metal rack on the right. Tool cart, tool chest, crates and a barrel
+    # in front.
+    place("steel_frame_shelves_02", -2.0, ROOM_BACK - 0.27, z=0)
+    place("steel_frame_shelves_02", -1.42, ROOM_BACK - 0.27, z=0)
+    place("WoodenTable_03", -0.15, ROOM_BACK - 0.3, z=0)
+    board = flat("pegboard", (0.62, 0.5, 0.36), 0.8)
+    box("pegboard", -0.8, 0.5, ROOM_BACK - 0.02, ROOM_BACK, 1.0, 1.75, board)
+    place("handsaw_wood", -0.55, ROOM_BACK - 0.03, z=1.25, rot=90, rot_x=0)
+    place("wooden_hammer_01", -0.2, ROOM_BACK - 0.03, z=1.35, rot=0)
+    place("measuring_tape_01", 0.1, ROOM_BACK - 0.05, z=1.45, rot=90)
+    place("worn_metal_rack", 1.85, ROOM_BACK - 0.32, z=0)
+    place("metal_jerrycan", -1.35, 0.2, z=0, rot=40)
+    place("wooden_crate_02", 0.95, 0.45, z=0, rot=80)
+    place("old_tyre", 0.2, ROOM_BACK - 0.75, z=0, rot_x=90, rot=-10)
+    place("plastic_crate_03", 0.45, 1.05, z=0, rot=15)
+    place("plastic_crate_02", 1.35, ROOM_BACK - 0.32, z=0, rot=5)
+    place("plastic_crate_02", 1.35, ROOM_BACK - 0.32, drop=0.8, rot=-3)
+    place("Barrel_02", 2.0, 0.55, z=0)
+    place("plastic_monobloc_chair_01", 1.8, -0.2, z=0, rot=200)
+    place("garden_hose_wall_mounted_01", half - 0.02, 0.9, z=1.0, rot=-90)
+    socket(0.65, 1.0)
+    socket(-0.95, 0.3)
+
+    s = {
+        "bench_l": spot(-0.6, ROOM_BACK - 0.35, drop=1.2),
+        "bench_r": spot(0.3, ROOM_BACK - 0.35, drop=1.2),
+        "shelf_l_low": spot(-2.0, ROOM_BACK - 0.27, drop=0.5),
+        "shelf_l_mid": spot(-2.0, ROOM_BACK - 0.27, drop=0.9),
+        "shelf_l_top": spot(-2.0, ROOM_BACK - 0.27, drop=1.4),
+        "shelf_r_low": spot(-1.42, ROOM_BACK - 0.27, drop=0.5),
+        "shelf_r_top": spot(-1.42, ROOM_BACK - 0.27, drop=1.4),
+        "sill": spot(0.95, ROOM_BACK - 0.05, drop=1.6),
+        "rack_low": spot(1.85, ROOM_BACK - 0.32, drop=0.6),
+        "rack_mid": spot(1.85, ROOM_BACK - 0.32, drop=1.1),
+        "chest_l": spot(0.62, 0.45, drop=1.0),
+        "chest_r": spot(1.28, 0.45, drop=1.0),
+        "floor_center": spot(0.1, 0.3, z=0),
+        "barrel": spot(2.0, 0.55, drop=1.2),
+        "floor_bench": spot(-0.4, 1.05, z=0),
+        "floor_mid": spot(-0.45, 0.6, z=0),
+        "floor_front": spot(0.7, 0.1, z=0),
+        "floor_right": spot(1.25, 0.08, z=0),
+        "floor_left": spot(-0.75, 0.1, z=0),
+    }
+    arrangements = [
+        ["bench_l", "floor_right", "shelf_r_top", "chest_l", "rack_low", "shelf_r_low"],
+        ["rack_mid", "sill", "bench_r", "floor_mid", "shelf_l_mid", "barrel"],
+        ["floor_center", "shelf_l_top", "floor_front", "chest_r", "floor_left", "floor_bench"],
+    ]
+    place_targets(GARAGE_OBJECTS, s, arrangements)
+
+    # Clutter around every spot.
+    place("spray_paint_bottles", -0.85, ROOM_BACK - 0.2, drop=1.2, pick=["spray_paint_bottles"])
+    place("Drill_01", 0.0, ROOM_BACK - 0.4, drop=1.2, rot=30)
+    place("cleaner_tin_01", 0.5, ROOM_BACK - 0.15, drop=1.2)
+    place("lubricant_spray", 0.6, ROOM_BACK - 0.3, drop=1.2)
+    place("can_rusted", -0.25, ROOM_BACK - 0.15, drop=1.2)
+    place("seeding_tray_01", -1.55, ROOM_BACK - 0.27, drop=1.4, scale=0.8)
+    place("cardboard_box_01", -1.42, ROOM_BACK - 0.27, drop=0.9, scale=0.4)
+    place("multi_cleaner_5_litre", -1.25, ROOM_BACK - 0.2, drop=0.5, scale=0.9)
+    place("can_rusted", -2.18, ROOM_BACK - 0.2, drop=0.9, scale=0.8)
+    place("cleaner_tin_01", -1.82, ROOM_BACK - 0.2, drop=1.4)
+    place("plastic_jerrycan", 1.55, 1.0, z=0, rot=-20)
+    place("can_rusted", -2.15, ROOM_BACK - 0.2, drop=0.25)
+    place("leather_cleaner_can", 1.65, ROOM_BACK - 0.25, drop=1.1)
+    place("oil_tin", 2.05, ROOM_BACK - 0.25, drop=0.6)
+    place("cardboard_box_01", 1.85, ROOM_BACK - 0.3, drop=1.6, scale=0.5)
+    place("small_oil_can_01", 0.05, ROOM_BACK - 0.2, drop=1.2, rot=40, scale=0.8)
+    place("trowel_01", -0.35, ROOM_BACK - 0.45, drop=1.2, rot=10)
+    place("measuring_tape_01", 0.95, 0.4, drop=1.0, rot=30)
+    place("can_rusted", 1.0, 0.55, drop=1.0)
+    place("compost_bag_02", -0.85, ROOM_BACK - 0.6, z=0, scale=0.85, rot=-15)
+    place("plastic_crate_01", -2.0, ROOM_BACK - 0.27, drop=2.3, scale=0.8)
+    place("cardboard_box_01", -1.42, ROOM_BACK - 0.27, drop=2.3, scale=0.5)
+    place("spray_paint_bottles", 1.95, ROOM_BACK - 0.25, drop=1.1, pick=["spray_paint_bottles_dirty"])
+    place("cardboard_box_01", 2.05, 0.95, z=0, scale=0.4, rot=20)
+    place("cement_bag", 0.6, 1.35, z=0, rot=10, scale=0.8)
+    place("metal_jerrycan", 2.1, -0.2, z=0, rot=-30)
+    place("dartboard", 1.25, ROOM_BACK - 0.02, z=1.4, rot_x=90, scale=0.8)
 
 
 def build_corridor():
@@ -784,7 +1083,7 @@ def render_final(room, samples):
     setup_render(OUT_W, OUT_H, samples)
     out = RAW / room
     scored = [r for r in placed if r["role"] == "scored"]
-    expected = 5 if room == "hallway" else 15
+    expected = 5 if room.startswith("hallway") else 6
     if len(scored) != expected:
         raise SystemExit(f"{room}: expected {expected} scored objects, found {len(scored)}")
     labels = [r["label"] for r in scored]
@@ -906,32 +1205,40 @@ def render_icons(room, samples):
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     parser = argparse.ArgumentParser()
-    parser.add_argument("--scene", required=True, choices=["kitchen", "living_room", "hallway", "corridor"])
-    parser.add_argument("--mode", default="preview", choices=["preview", "final", "transition", "icons", "check"])
+    parser.add_argument("--scene", required=True,
+                        choices=["kitchen", "living_room", "hallway", "corridor", "bedroom", "garage"])
+    parser.add_argument("--mode", default="preview",
+                        choices=["preview", "final", "transition", "icons", "check", "spots"])
+    parser.add_argument("--arrangement", type=int, default=1, choices=[1, 2, 3])
     parser.add_argument("--samples", type=int, default=128)
     parser.add_argument("--frame", type=int, default=None, help="render one transition frame")
     args = parser.parse_args(argv)
+    global ARRANGEMENT, MODE
+    ARRANGEMENT, MODE = args.arrangement, args.mode
+    # Raw output folder: bedroom_2, garage_1, ... The corridor has no arrangements.
+    room = args.scene if args.scene == "corridor" else f"{args.scene}_{args.arrangement}"
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
     builders = {"kitchen": build_kitchen, "living_room": build_living_room,
-                "hallway": build_hallway, "corridor": build_corridor}
+                "hallway": build_hallway, "corridor": build_corridor,
+                "bedroom": build_bedroom, "garage": build_garage}
     builders[args.scene]()
 
     if args.mode == "icons":
-        render_icons(args.scene, args.samples)
+        render_icons(room, args.samples)
     elif args.mode == "check":
         report_layout()
         check_visibility()
-    elif args.mode == "preview":
+    elif args.mode in ("preview", "spots"):
         if args.scene != "corridor":
             report_layout()
         setup_render(960, 540, 48)
         if args.frame:
             bpy.context.scene.frame_set(args.frame)
         suffix = f"_{args.frame:02d}" if args.frame else ""
-        render_to(PREVIEW / f"{args.scene}{suffix}.png")
+        render_to(PREVIEW / f"{room}{'_spots' if args.mode == 'spots' else ''}{suffix}.png")
     elif args.mode == "final":
-        render_final(args.scene, args.samples)
+        render_final(room, args.samples)
     else:
         setup_render(OUT_W, OUT_H, args.samples)
         scene = bpy.context.scene

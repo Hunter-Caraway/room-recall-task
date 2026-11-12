@@ -13,6 +13,7 @@ from pathlib import Path
 
 from psychopy import core, event, logging, visual
 
+from .checks import CONTINUE_RECT, SLIDER_LEFT, SLIDER_RIGHT, SLIDER_Y, SliderController
 from .filler import FillerResult, Problem
 from .flow import QuitSession
 from .layout import CANVAS, DONE_RECT, ROOM_ORIGIN, ROOM_SIZE, TRAY_HEIGHT, TRAY_TOP, Icon, PlacementController
@@ -31,7 +32,8 @@ MUTED = rgb(160, 160, 158)
 ENTRY = rgb(250, 220, 130)
 BUTTON = rgb(70, 140, 90)
 BUTTON_OFF = rgb(70, 72, 76)
-STYLES = {"title": (44, TEXT), "body": (30, TEXT), "muted": (28, MUTED), "entry": (44, ENTRY)}
+STYLES = {"title": (44, TEXT), "body": (30, TEXT), "muted": (28, MUTED), "entry": (44, ENTRY),
+          "digit": (150, TEXT)}
 
 
 class PsychoPyDisplay:
@@ -229,20 +231,23 @@ class PsychoPyDisplay:
         result = FillerResult()
         deadline = core.getTime() + seconds
         index = 0
+        shown_at = None  # when the current sum first appeared
         shot = True
         self.events()
         while core.getTime() < deadline:
             problem = items[index % len(items)]
             self._draw_lines([(problem.text, "title"), ("Y = right      N = wrong", "muted")])
             self.win.flip()
+            if shown_at is None:
+                shown_at = self.now_ms()
             if shot:
                 self.screenshot("filler")
                 shot = False
-            for kind, value, _ in self.events():
+            for kind, value, at in self.events():
                 if kind == "key" and value in ("y", "n"):
-                    result.answered += 1
-                    result.correct += int((value == "y") == problem.is_true)
+                    result.answer(problem, value == "y", at - shown_at)
                     index += 1
+                    shown_at = None
                     break
         return result
 
@@ -304,6 +309,86 @@ class PsychoPyDisplay:
             if not shot and t > 0.5:
                 self.screenshot("transition")
                 shot = True
+
+    # ------------------------------------------------------------ manipulation checks
+    def _hold(self, lines, seconds: float) -> None:
+        """Show lines for a fixed time, timed by flips. Keys pressed meanwhile are dropped."""
+        started = None
+        while started is None or core.getTime() - started < seconds:
+            self._draw_lines(lines)
+            self.win.flip()
+            if started is None:
+                started = core.getTime()
+            self.events()
+
+    def digit_span(self, digits: list[int], digit_ms: int, gap_ms: int) -> tuple[str, int]:
+        self._hold([("+", "digit")], 1.0)
+        for digit in digits:
+            self._hold([(str(digit), "digit")], digit_ms / 1000)
+            self._hold([("", "digit")], gap_ms / 1000)
+        text = ""
+        shown_at = None
+        shot = True
+        while True:
+            self._draw_lines([
+                ("Type the numbers in reverse order, then press Enter", "title"),
+                (" ".join(text) or "_", "entry"),
+                ("Backspace fixes a mistake", "muted"),
+            ])
+            self.win.flip()
+            if shown_at is None:
+                shown_at = self.now_ms()
+            if shot:
+                self.screenshot("digit_span")
+                shot = False
+            for kind, value, at in self.events():
+                if kind == "digit" and len(text) < 12:
+                    text += value
+                elif kind == "key" and value == "backspace":
+                    text = text[:-1]
+                elif kind == "key" and value == "return" and text:
+                    return text, at - shown_at
+
+    def slider(self, question: str, low: str, high: str, controller: SliderController) -> None:
+        self.events()
+        shot = True
+        s = self.scale
+        title = visual.TextStim(self.win, text=question, font="Arial", color=TEXT, height=44 * s,
+                                wrapWidth=1700 * s, pos=self.pos(CANVAS[0] / 2, SLIDER_Y - 170))
+        line = visual.Line(self.win, start=self.pos(SLIDER_LEFT, SLIDER_Y), end=self.pos(SLIDER_RIGHT, SLIDER_Y),
+                           lineColor=MUTED, lineWidth=6 * s)
+        ticks = [visual.Line(self.win, start=self.pos(x, SLIDER_Y - 18), end=self.pos(x, SLIDER_Y + 18),
+                             lineColor=MUTED, lineWidth=4 * s) for x in (SLIDER_LEFT, SLIDER_RIGHT)]
+        labels = [visual.TextStim(self.win, text=text, font="Arial", color=MUTED, height=28 * s,
+                                  pos=self.pos(x, SLIDER_Y + 56)) for text, x in ((low, SLIDER_LEFT), (high, SLIDER_RIGHT))]
+        marker = visual.Circle(self.win, radius=18 * s, fillColor=ENTRY, lineWidth=0)
+        button = self._rect(CONTINUE_RECT, BUTTON_OFF)
+        button_label = visual.TextStim(self.win, text="Continue", font="Arial", height=30 * s,
+                                       pos=self.pos(CONTINUE_RECT[0] + CONTINUE_RECT[2] / 2,
+                                                    CONTINUE_RECT[1] + CONTINUE_RECT[3] / 2))
+        while True:
+            for kind, value, at in self.events():
+                if kind == "press":
+                    if controller.press(value, at):
+                        return
+                elif kind == "move":
+                    controller.move(value, at)
+                elif kind == "release":
+                    controller.release(value, at)
+            for stim in (title, line, *ticks, *labels):
+                stim.draw()
+            ready = controller.value is not None
+            if ready:
+                marker.pos = self.pos(controller.x_for(controller.value), SLIDER_Y)
+                marker.draw()
+            button.fillColor = BUTTON if ready else BUTTON_OFF
+            button_label.color = TEXT if ready else MUTED
+            button.draw()
+            button_label.draw()
+            self.win.flip()
+            if shot:
+                self.screenshot("slider")
+                shot = False
 
     # ------------------------------------------------------------ helpers
     def screenshot(self, name: str) -> None:

@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this task in research, please cite it as below and name it in your Methods section."
+type: software
+title: "Room Recall Task: an object-location memory task for colored-noise research"
+abstract: >-
+  An object-location memory task for in-lab studies. Participants study a
+  realistic rendered room, complete a short filled delay, then drag each object
+  from a tray back to where it was in the now-empty room. Runs on PsychoPy or
+  pygame, with counterbalanced conditions, manipulation checks and per-object
+  error data.
+authors:
+  - family-names: Caraway
+    given-names: Hunter
+    email: hcaraway5705@floridapoly.edu
+    affiliation: Florida Polytechnic University
+repository-code: "https://github.com/Hunter-Caraway/room-recall-task"
+url: "https://github.com/Hunter-Caraway/room-recall-task"
+license: MIT
+date-released: 2026-11-11
+keywords:
+  - object-location memory
+  - spatial memory
+  - colored noise
+  - PsychoPy
+  - experiment

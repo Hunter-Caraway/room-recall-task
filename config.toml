@@ -3,12 +3,24 @@
 [study]
 # Labels only. The game plays no audio and never shows these to participants.
 # Keep the key to what each label means outside this project.
-# Must be an even number of conditions, with one room set per condition.
-conditions = ["A", "B"]
-room_sets = [["kitchen"], ["living_room"]]
-participants_on_run_sheet = 35
+# One room set per condition. Each set holds one arrangement of each room type: the
+# same three rooms, with the scored objects in different places in each arrangement,
+# so nothing learned in one condition helps in the next.
+conditions = ["A", "B", "C"]
+room_sets = [
+  ["bedroom_1", "living_room_1", "garage_1"],
+  ["bedroom_2", "living_room_2", "garage_2"],
+  ["bedroom_3", "living_room_3", "garage_3"],
+]
+# Scored objects in each room. The rooms are rendered with exactly this many, so
+# changing it means re-rendering (art/render_all.sh). The self-test checks they match.
+objects_per_room = 6
+# Three conditions give 6 condition orders x 3 room-set rotations = 18 cells.
+# 120 participants gives exactly 20 per condition order; 126 would fill every cell equally.
+participants_on_run_sheet = 120
 
 [timing]
+# PLACEHOLDER until the encoding time is justified from the literature.
 study_seconds = 30
 # Filled delay between study and test, in seconds: quick true/false sums with no
 # spatial content. Set to 0 to go straight from the full room to the empty room.
@@ -16,12 +28,42 @@ retention_seconds = 30
 transition_seconds = 3
 
 [scoring]
-# An object scores 1 within this distance of its spot, as a percent of room width.
-# Continuous distance and swap errors are recorded as well.
+# Secondary outcome only. An object scores 1 within this distance of its spot, as a
+# percent of room width (5% = 80 px of a 1600 px room). The primary outcome is the
+# continuous distance_pct, which needs no threshold. Raw positions are saved, so this
+# can be changed during analysis without rerunning anyone.
 tolerance_percent = 5
 
 [practice]
-# A separate room whose objects never appear in the scored rooms.
-room = "hallway"
+# A short unscored room opens every condition block, so the participant settles into
+# the noise before the scored rooms. Block 1 uses the first room, block 2 the second,
+# and so on. Their objects never appear in the scored rooms. Practice is not saved.
+rooms = ["hallway_1", "hallway_2", "hallway_3"]
 objects = 5
 retention_seconds = 10
+
+[checks]
+# Manipulation checks after the last room of every block (not for the baseline group):
+# backward digit span first, then the sliders. Saved to P001_checks.csv.
+enabled = true
+
+[checks.digit_span]
+# Digits are shown one at a time; the participant types them in reverse order.
+# Two trials per length; it stops when both trials at one length are wrong.
+start_length = 2
+max_length = 8
+trials_per_length = 2
+digit_ms = 800
+gap_ms = 200
+
+[[checks.sliders]]
+id = "loudness"
+question = "How loud was the noise during the last few rooms?"
+low = "Not at all loud"
+high = "Extremely loud"
+
+[[checks.sliders]]
+id = "annoyance"
+question = "How annoying was the noise during the last few rooms?"
+low = "Not at all annoying"
+high = "Extremely annoying"

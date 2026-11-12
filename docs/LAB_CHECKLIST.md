@@ -19,11 +19,12 @@ choose **More info**, then **Run anyway**, or ask IT to allow it.
 
 1. Double-click `Run Task.bat`.
 2. Type participant number `999`, then press Enter.
-3. Do the practice, then one full room, including the sums.
-4. Quit with **Ctrl+Shift+Q** during the second room.
-5. Start `Run Task.bat` again, type `999`, press **F8** to resume, and finish.
-6. Open `data\P999_results.csv` and confirm it has 30 rows, and that `study_dropped_frames` is 0 or close to it.
-7. Delete every `P999_` file from `data`.
+3. Do the practice room, then one full scored room, including the sums.
+4. Quit with **Ctrl+Shift+Q** during the second scored room.
+5. Start `Run Task.bat` again, type `999`, press **F8** to resume, and finish (about 30 minutes).
+6. Open `data\P999_results.csv` and confirm it has 54 rows (9 rooms x 6 objects), and that `study_dropped_frames` is 0 or close to it.
+7. Open `data\P999_checks.csv` and confirm it has digit-span and slider rows for blocks 1, 2 and 3.
+8. Delete every `P999_` file from `data`.
 
 ## Check while it runs
 
@@ -31,6 +32,9 @@ choose **More info**, then **Run anyway**, or ask IT to allow it.
 - [ ] Objects pick up and drop exactly under the pointer.
 - [ ] A very quick click on Done still works.
 - [ ] Y and N answer the sums.
+- [ ] No "wait for the experimenter" screen appears between rooms or blocks.
+- [ ] Digit-span digits are easy to read; typing, Backspace and Enter work.
+- [ ] The sliders show no marker until clicked, and the marker follows a drag.
 - [ ] The cut from the full room is instant and the 3-second walk plays smoothly.
 - [ ] No screen ever shows a condition letter or noise name.
 

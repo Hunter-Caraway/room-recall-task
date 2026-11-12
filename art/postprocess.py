@@ -13,7 +13,9 @@ EDGE_MARGIN = 6  # px from the image border
 MIN_SIDE = 28  # px; smaller objects are too hard to see
 MIN_SPACING = 0.10  # share of room width between correct spots: twice the 5% tolerance
 ICON_BOX, ICON_LONG_SIDE = 160, 150  # px
-ROOMS = ("kitchen", "living_room", "hallway")
+ROOM_TYPES = ("bedroom", "living_room", "garage", "hallway")
+ARRANGEMENTS = (1, 2, 3)
+ROOMS = tuple(f"{kind}_{k}" for kind in ROOM_TYPES for k in ARRANGEMENTS)
 
 
 def build_icon(source, target):
@@ -33,6 +35,9 @@ def build_icon(source, target):
 
 def build_room(room):
     raw, out = RAW / room, OUT / "rooms" / room
+    # Every arrangement of a room type shows the same objects, so they share the
+    # icons rendered for arrangement 1.
+    icons_raw = RAW / f"{room.rpartition('_')[0]}_1" / "icons"
     for sub in ("objects", "icons"):
         (out / sub).mkdir(parents=True, exist_ok=True)
         for old in (out / sub).glob("*.png"):
@@ -65,7 +70,7 @@ def build_room(room):
         file = f"objects/{entry['id']}.png"
         sprite.crop(box).save(out / file, optimize=True)
         icon = f"icons/{entry['id']}.png"
-        icon_problem = build_icon(raw / "icons" / f"{i:02d}.png", out / icon)
+        icon_problem = build_icon(icons_raw / f"{i:02d}.png", out / icon)
         if icon_problem:
             problems.append(f"{entry['label']}: {icon_problem}")
         objects.append({
@@ -87,6 +92,25 @@ def build_room(room):
     return problems
 
 
+def check_arrangements(kind):
+    """The same objects in the same order in every arrangement, and no object
+    within twice the tolerance of where it stood in another arrangement."""
+    problems = []
+    rooms = [json.loads((OUT / "rooms" / f"{kind}_{k}" / "room.json").read_text()) for k in ARRANGEMENTS]
+    ids = [[o["id"] for o in r["objects"]] for r in rooms]
+    if any(i != ids[0] for i in ids):
+        return [f"{kind}: arrangements do not hold the same objects in the same order"]
+    limit = MIN_SPACING * rooms[0]["width"]
+    for index, object_id in enumerate(ids[0]):
+        spots = [r["objects"][index]["center"] for r in rooms]
+        for a in range(len(spots)):
+            for b in range(a + 1, len(spots)):
+                d = ((spots[a][0] - spots[b][0]) ** 2 + (spots[a][1] - spots[b][1]) ** 2) ** 0.5
+                if d <= limit:
+                    problems.append(f"{kind}: {object_id} only moves {d:.0f}px between arrangements {a + 1} and {b + 1}")
+    return problems
+
+
 def build_transition():
     out = OUT / "transition"
     out.mkdir(parents=True, exist_ok=True)
@@ -100,6 +124,8 @@ def main():
     problems = []
     for room in ROOMS:
         problems += [f"{room}: {p}" for p in build_room(room)]
+    for kind in ROOM_TYPES:
+        problems += check_arrangements(kind)
     problems += build_transition()
     for problem in problems:
         print("PROBLEM", problem)
