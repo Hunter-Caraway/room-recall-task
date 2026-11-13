@@ -50,7 +50,7 @@ def main(argv: list[str] | None = None) -> int:
     if "--self-test" in argv:
         from .selftest import run_self_test
         return run_self_test(assets, config, WRITABLE / "selftest.log")
-    write_run_sheet(data_dir / "run_sheet.csv", config.participants_on_run_sheet, config.conditions, config.room_sets)
+    write_run_sheet(data_dir / "run_sheet.csv", config.participants_on_run_sheet, config.conditions, config.rooms)
     if "--write-run-sheet" in argv:
         return 0
 
@@ -58,19 +58,26 @@ def main(argv: list[str] | None = None) -> int:
 
     if FROZEN or "--pygame" in argv:
         from .pygame_display import PygameDisplay as Display
+        drawn_with = "pygame"
     else:
         from .psychopy_display import PsychoPyDisplay as Display
+        drawn_with = "psychopy"
 
     shots = option("--screenshots", None) if "--screenshots" in argv else None
     display = Display(assets, fullscreen="--windowed" not in argv, screenshots=shots)
-    experiment = Experiment(config, assets, data_dir, display, baseline="--baseline" in argv, build=build_label())
+    experiment = Experiment(config, assets, data_dir, display, baseline="--baseline" in argv,
+                            build=f"{build_label()} {drawn_with}")
     try:
         if "--smoke-test" in argv:
-            for name in experiment.all_room_names():
-                experiment.room(name)
-            display.transition(0.5)
-            print(f"smoke test ok: {len(experiment.rooms)} rooms, {len(display.transition_frames)} "
-                  f"transition frames, display {type(display).__name__}")
+            # Build and load one participant's practice trial and every scored trial.
+            from .session import Session
+            import tempfile
+            with tempfile.TemporaryDirectory() as temp:
+                session = Session(config, Path(temp), 1, experiment.items, experiment.rooms)
+                for trial in [session.practice, *session.trials]:
+                    experiment.prepare(trial)
+            print(f"smoke test ok: {len(experiment.items)} objects, {len(experiment.rooms)} rooms, "
+                  f"{1 + len(session.trials)} trials prepared, display {type(display).__name__}")
             return 0
         experiment.run()
     except QuitSession:

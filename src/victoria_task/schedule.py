@@ -1,7 +1,6 @@
 """Deterministic assignment of condition order and room sets to a participant."""
 from __future__ import annotations
 
-import random
 from dataclasses import dataclass
 
 
@@ -36,28 +35,24 @@ class Block:
     rooms: tuple[str, ...]
 
 
-def build_schedule(
-    participant: int, conditions: list[str], room_sets: list[list[str]]
-) -> list[Block]:
-    """Build a participant's blocks.
+def build_schedule(participant: int, conditions: list[str], rooms: list[str]) -> list[Block]:
+    """Build a participant's blocks: one per condition, each showing every room once.
 
-    Room sets rotate independently of condition order: over len(square) x n
-    participants, every condition order is paired with every room-set rotation
-    exactly once. Within a block the room order is shuffled, repeatably for a
-    given participant, so no room type always comes first.
+    Condition order comes from a balanced Latin square. Room order within each block
+    comes from a second balanced Latin square; the row shifts with the block and with
+    the participant's cycle through the condition square, so over len(square)^2
+    participants every condition order meets every set of room orders.
     """
     if participant < 1:
         raise ValueError("participant number must be 1 or higher")
-    n = len(conditions)
-    if len(room_sets) != n:
-        raise ValueError("need exactly one room set per condition")
-    square = balanced_latin_square(n)
+    condition_square = balanced_latin_square(len(conditions))
+    room_square = balanced_latin_square(len(rooms))
     index = participant - 1
-    order = square[index % len(square)]
-    rotation = (index // len(square)) % n
+    order = condition_square[index % len(condition_square)]
+    cycle = index // len(condition_square)
     blocks = []
     for position, condition_index in enumerate(order):
-        rooms = list(room_sets[(position + rotation) % n])
-        random.Random(f"rooms/{participant}/{position + 1}").shuffle(rooms)
-        blocks.append(Block(index=position + 1, condition=conditions[condition_index], rooms=tuple(rooms)))
+        row = room_square[(index + cycle + 2 * position) % len(room_square)]
+        blocks.append(Block(index=position + 1, condition=conditions[condition_index],
+                            rooms=tuple(rooms[i] for i in row)))
     return blocks

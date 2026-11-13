@@ -1,0 +1,43 @@
+name,label,category,width_m,surfaces,rotate_deg
+8ball,8-ball,ball,0.057,table|shelf,0
+bolt01a,bolt,hardware,0.08,table|shelf,0
+bottleofwhitewine,wine bottle,bottle,0.075,table|shelf,0
+bowtie,bow tie,clothing,0.12,table|shelf,0
+coffeemaker,coffee maker,kitchen appliance,0.2,table|shelf,0
+coloringset,colouring set,art supplies,0.4,table|floor,0
+electricguitar01,electric guitar,instrument,0.45,lean|wall,0
+electricmixer,stand mixer,kitchen appliance,0.36,table,0
+electrictoothbrush01c,electric toothbrush,personal care,0.15,table|shelf,51
+flipflop01b,flip-flop,footwear,0.27,floor|shelf,0
+football,american football,ball,0.28,floor|shelf|table,0
+gamecontroller01,game controller,electronics,0.2,table|shelf,0
+garbagecan02,pedal bin,container,0.3,floor,0
+handheldtelescope,telescope,optics,0.43,table|shelf,-32
+hose,garden hose,garden,0.45,floor|wall,0
+ipod,music player,electronics,0.11,table|shelf,0
+jarofapplesauce,jar of applesauce,food,0.12,table|shelf,0
+jeans01,jeans,clothing,0.6,wall,0
+key07,keys,hardware,0.09,table|shelf|wall,0
+knife03,kitchen knife,kitchen tool,0.3,table,0
+laundrybasket01a,laundry basket,container,0.6,floor,0
+lintroller,lint roller,personal care,0.25,table|shelf,0
+mug05,mug,cup,0.12,table|shelf,0
+musicsheet,sheet music,paper,0.32,table|wall,0
+painting,painting,decor,0.4,wall|lean,0
+record,vinyl record,music,0.3,wall|lean|shelf,0
+rubikcube,puzzle cube,toy,0.07,table|shelf,0
+saltshaker03a,salt shaker,kitchen tool,0.05,table|shelf,0
+snowglobe,snow globe,decor,0.1,table|shelf,0
+soccerball,soccer ball,ball,0.22,floor|shelf,0
+soccercleat01,football boot,footwear,0.29,floor|shelf,0
+stubbywrench01a,spanner,hand tool,0.2,table|shelf|wall,0
+tabascosauce,hot sauce,bottle,0.035,table|shelf,0
+tennisracket,tennis racket,sports,0.68,floor|table|wall,0
+tie02,necktie,clothing,0.12,wall,0
+travelmug,travel mug,cup,0.12,table|shelf,0
+triangleruler01,set square,stationery,0.3,table|wall,0
+vacuumcleaner01,stick vacuum,appliance,0.27,lean,0
+visor,sun visor,clothing,0.26,table|shelf|wall,0
+volleyball,volleyball,ball,0.21,floor|shelf,0
+washingmachine,washing machine,appliance,0.6,floor,0
+watercolorpaintset,watercolour set,art supplies,0.25,table|shelf,0

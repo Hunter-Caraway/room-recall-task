@@ -1,0 +1,4 @@
+# Installed into runtime\python by setup_runtime.ps1 on the first run of Run Task.bat.
+# Pinned with hashes: pip refuses any file that does not match.
+pygame-ce==2.5.8 --hash=sha256:0f75f6cf17607e380687aa5551c46aa830c8037b2950c71e48be8891ddc737da
+pillow==13.0.0 --hash=sha256:d7710eb676e9bb68965cb045be0d333b4c0d7f9dfbaa7fbf121385b1588683d3

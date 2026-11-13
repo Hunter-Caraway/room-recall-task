@@ -14,15 +14,18 @@ from pathlib import Path
 
 from .schedule import Block, build_schedule
 
-COLUMNS = [
-    "participant", "baseline", "session_resumed", "block", "condition", "room",
-    "room_order_in_block", "object", "label", "correct_x", "correct_y", "placed_x", "placed_y",
-    "distance_pct", "distance_px", "tolerance_pct", "score", "nearest_other",
-    "nearest_other_distance_pct", "swap", "placement_order", "first_pickup_ms",
-    "first_placed_ms", "placement_latency_ms", "last_placed_ms", "held_ms", "correction_ms",
-    "moves", "reconstruction_ms", "study_ms", "study_end_frame_ms", "study_dropped_frames",
-    "retention_ms", "filler_answered", "filler_correct", "filler_mean_rt_ms", "room_width_px",
-    "icon_px", "condition_order", "room_order", "build",
+# One row per grid tile.
+TILE_COLUMNS = [
+    "participant", "baseline", "session_resumed", "block", "condition", "room", "room_order_in_block",
+    "tile", "item", "label", "category", "role", "spot", "rotate_deg", "selected", "correct",
+    "first_selected_ms", "last_toggle_ms", "toggles", "build",
+]
+# One row per trial (room).
+TRIAL_COLUMNS = [
+    "participant", "baseline", "session_resumed", "block", "condition", "room", "room_order_in_block",
+    "targets", "decoys", "hits", "false_alarms", "hit_rate", "false_alarm_rate", "dprime", "criterion",
+    "selected", "grid_ms", "study_ms", "study_end_frame_ms", "study_dropped_frames", "retention_ms",
+    "filler_answered", "filler_correct", "filler_mean_rt_ms", "condition_order", "room_order", "build",
 ]
 
 # Manipulation checks after each block: one row per digit-span trial, per span
@@ -47,7 +50,8 @@ class ParticipantStore:
     def __init__(self, data_dir: Path, participant: int, prefix: str = "P"):
         """prefix is "P" for participants and "B" for the no-study baseline group."""
         self.participant = participant
-        self.csv_path = Path(data_dir) / f"{prefix}{participant:03d}_results.csv"
+        self.tiles_path = Path(data_dir) / f"{prefix}{participant:03d}_tiles.csv"
+        self.trials_path = Path(data_dir) / f"{prefix}{participant:03d}_trials.csv"
         self.state_path = Path(data_dir) / f"{prefix}{participant:03d}_state.json"
         self.checks_path = Path(data_dir) / f"{prefix}{participant:03d}_checks.csv"
 
@@ -70,9 +74,6 @@ class ParticipantStore:
         with open(path, encoding="utf-8", newline="") as handle:
             return list(csv.DictReader(handle))
 
-    def _read_rows(self) -> list[dict]:
-        return self._read(self.csv_path)
-
     @staticmethod
     def _write(path: Path, columns: list[str], rows: list[dict]) -> None:
         buffer = io.StringIO(newline="")
@@ -81,10 +82,11 @@ class ParticipantStore:
         writer.writerows(rows)
         _atomic_write(path, buffer.getvalue())
 
-    def save_room(self, rows: list[dict], state: dict) -> None:
-        """Save one finished room. Rows go first, so a crash between the two
-        writes is healed on resume by discarding rows beyond the saved state."""
-        self._write(self.csv_path, COLUMNS, self._read_rows() + rows)
+    def save_trial(self, tile_rows: list[dict], trial_row: dict, state: dict) -> None:
+        """Save one finished trial. Rows go first, so a crash between the writes is
+        healed on resume by dropping rows the state file does not list as finished."""
+        self._write(self.tiles_path, TILE_COLUMNS, self._read(self.tiles_path) + tile_rows)
+        self._write(self.trials_path, TRIAL_COLUMNS, self._read(self.trials_path) + [trial_row])
         self.save_state(state)
 
     def save_checks(self, rows: list[dict], state: dict) -> None:
@@ -98,31 +100,28 @@ class ParticipantStore:
     def reconcile(self, finished_keys: set[tuple[str, str]], checked_blocks: set[str] = frozenset()) -> None:
         """Drop rows for any (block, room), or block of checks, the state file does
         not list as finished."""
-        rows = self._read_rows()
-        kept = [r for r in rows if (r["block"], r["room"]) in finished_keys]
-        if len(kept) != len(rows):
-            self._write(self.csv_path, COLUMNS, kept)
+        for path, columns in ((self.tiles_path, TILE_COLUMNS), (self.trials_path, TRIAL_COLUMNS)):
+            rows = self._read(path)
+            kept = [r for r in rows if (r["block"], r["room"]) in finished_keys]
+            if len(kept) != len(rows):
+                self._write(path, columns, kept)
         checks = self._read(self.checks_path)
         kept = [r for r in checks if r["block"] in checked_blocks]
         if len(kept) != len(checks):
             self._write(self.checks_path, CHECK_COLUMNS, kept)
 
 
-def run_sheet_text(
-    count: int, conditions: list[str], room_sets: list[list[str]]
-) -> str:
+def run_sheet_text(count: int, conditions: list[str], rooms: list[str]) -> str:
     """Experimenter-only CSV: which noise condition to set for each block."""
     buffer = io.StringIO(newline="")
     writer = csv.writer(buffer, lineterminator="\n")
     writer.writerow(["participant", "block", "condition", "rooms"])
     for participant in range(1, count + 1):
-        blocks: list[Block] = build_schedule(participant, conditions, room_sets)
+        blocks: list[Block] = build_schedule(participant, conditions, rooms)
         for block in blocks:
             writer.writerow([participant, block.index, block.condition, " + ".join(block.rooms)])
     return buffer.getvalue()
 
 
-def write_run_sheet(
-    path: Path, count: int, conditions: list[str], room_sets: list[list[str]]
-) -> None:
-    _atomic_write(Path(path), run_sheet_text(count, conditions, room_sets))
+def write_run_sheet(path: Path, count: int, conditions: list[str], rooms: list[str]) -> None:
+    _atomic_write(Path(path), run_sheet_text(count, conditions, rooms))

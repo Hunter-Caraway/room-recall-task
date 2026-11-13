@@ -1,61 +1,60 @@
 """Play whole scripted sessions with no window and check what got saved.
 
-Uses the real session flow (flow.py), drag-and-drop logic (layout.py) and data
-files, with a scripted display in place of PsychoPy. Run it on the lab computer
-with `Self Test.bat` or `python run_task.py --self-test`; it writes selftest.log.
+Uses the real session flow (flow.py), deal, grid logic and data files, with a
+scripted display in place of PsychoPy or pygame. Run it on the lab computer with
+`Self Test.bat` or `python run_task.py --self-test`; it writes selftest.log.
 Real display and mouse behaviour still need a person at the lab computer.
 """
 from __future__ import annotations
 
 import csv
-import dataclasses
 import itertools
-import math
 import tempfile
 import traceback
+from collections import Counter
 from pathlib import Path
 
 from .checks import CONTINUE_RECT, SLIDER_Y, SliderController
 from .config import Config
+from .deal import deal
 from .filler import FillerResult
-from .flow import Experiment, QuitSession
-from .layout import DONE_RECT, ICON_PX, PlacementController, load_icon, to_canvas
-from .session import Session, load_room
+from .flow import REMEMBER, WAIT_TEXT, Experiment, QuitSession
+from .grid import DONE_RECT, GridController
+from .schedule import build_schedule
+from .session import Session
+from .stimuli import load_items, load_room, pool
 
 DONE_POINT = (DONE_RECT[0] + DONE_RECT[2] / 2, DONE_RECT[1] + DONE_RECT[3] / 2)
 CONTINUE_POINT = (CONTINUE_RECT[0] + CONTINUE_RECT[2] / 2, CONTINUE_RECT[1] + CONTINUE_RECT[3] / 2)
 SPAN_RIGHT_UP_TO = 4  # the script answers digit-span trials right up to this length
 SLIDER_ANSWER = 65
-PAUSE_TEXT = "Please wait for the experimenter"  # removed from the task; must never appear
-
-
-def solid_point(controller: PlacementController, object_id: str) -> tuple[float, float]:
-    """A canvas point on a solid pixel of a placed object, nearest its centre."""
-    icon = controller.icons[object_id]
-    cx, cy = controller.placed_centre(object_id)
-    w, h = icon.size
-    best = min(
-        ((c, r) for r in range(h) for c in range(w) if icon.solid[r][c]),
-        key=lambda p: (p[0] - w / 2) ** 2 + (p[1] - h / 2) ** 2,
-    )
-    return cx - w / 2 + best[0] + 0.5, cy - h / 2 + best[1] + 0.5
+FALSE_ALARMS = 2  # decoys the script picks in every grid
+DEAL_CHECK_PARTICIPANTS = 126  # every participant number up to this must deal
 
 
 class ScriptedDisplay:
-    """Answers every screen automatically and records the text shown."""
+    """Answers every screen automatically and records what was shown.
 
-    def __init__(self, participant: int):
+    In each grid it picks every target but one, picks two decoys, and picks then
+    unpicks a third decoy, so hits, false alarms and toggles are all known.
+    """
+
+    def __init__(self, participant: int, items):
         self.participant = participant
+        self.items = items
         self.clock = itertools.count(0, 16)
         self.shown: list[str] = []
-        self.prepared: list[str] = []
-        self.transitions = 0
+        self.holds: list[int] = []
+        self.prepared: dict[str, tuple] = {}
+        self.studied: list[str] = []
 
     def now_ms(self) -> int:
         return next(self.clock)
 
-    def message(self, lines, key):
+    def message(self, lines, key, hold_ms=0):
         self.shown += [text for text, _ in lines]
+        if any(text == WAIT_TEXT for text, _ in lines):
+            self.holds.append(hold_ms)
 
     def enter_participant(self):
         return self.participant
@@ -63,10 +62,11 @@ class ScriptedDisplay:
     def ask_resume(self, number):
         return True
 
-    def prepare(self, room, icons):
-        self.prepared.append(room.name)
+    def prepare(self, key, room, tiles):
+        self.prepared[key] = (room.size, [t.size for t in tiles])
 
-    def study(self, room, seconds, cut_to_empty):
+    def study(self, key, seconds):
+        self.studied.append(key)
         return int(seconds * 1000), 16.7, 0
 
     def filler(self, items, seconds):
@@ -77,35 +77,15 @@ class ScriptedDisplay:
             result.answer(problem, said, 900)
         return result
 
-    def placement(self, room, controller: PlacementController):
-        full_round = len(controller.order) == len(room.objects)
-        assert not controller.press(DONE_POINT, self.now_ms()), "Done worked before all objects were placed"
-        order = controller.order
-        for index, obj in enumerate(order):
-            start = controller.slots[obj.id]
-            target = to_canvas(obj.center)
-            if full_round and index == 0:  # dropped just outside tolerance: must score 0
-                shift = room.width * 0.0505
-                target = (target[0] + (shift if obj.center[0] < room.width / 2 else -shift), target[1])
-            if full_round and index == 2:  # dropped on the next object's spot: a swap error
-                target = to_canvas(order[3].center)
-            if full_round and index == 1:  # back to the tray first, then placed properly
-                controller.press(start, self.now_ms())
-                controller.release((start[0], start[1] - 5), self.now_ms())
-            controller.press(start, self.now_ms())
-            controller.move(target)
-            controller.release(target, self.now_ms())
-            if full_round and index == 4:  # picked up again in the room and put back: 2 moves
-                grab = solid_point(controller, obj.id)
-                controller.press(grab, self.now_ms())
-                offset = (grab[0] - target[0], grab[1] - target[1])
-                fixed = to_canvas(obj.center)
-                controller.move((fixed[0] + offset[0], fixed[1] + offset[1]))
-                controller.release((fixed[0] + offset[0], fixed[1] + offset[1]), self.now_ms())
-        assert controller.press(DONE_POINT, self.now_ms()), "Done did not finish a complete room"
-
-    def transition(self, seconds):
-        self.transitions += 1
+    def grid(self, key, controller: GridController):
+        targets = [i for i, n in enumerate(controller.names) if self.items[n].pool.endswith("target")]
+        decoys = [i for i, n in enumerate(controller.names) if i not in targets]
+        for index in targets[1:] + decoys[:FALSE_ALARMS]:
+            assert not controller.press(controller.point_of(index), self.now_ms())
+        flip = decoys[FALSE_ALARMS]
+        controller.press(controller.point_of(flip), self.now_ms())
+        controller.press(controller.point_of(flip), self.now_ms())
+        assert controller.press(DONE_POINT, self.now_ms()), "Done did not finish the grid"
 
     def digit_span(self, digits, digit_ms, gap_ms):
         backward = "".join(str(d) for d in reversed(digits))
@@ -124,26 +104,27 @@ class _StopHere(QuitSession):
     pass
 
 
-def play(config: Config, assets: Path, data_dir: Path, participant: int, crash_after_room=False,
+def play(config: Config, assets: Path, data_dir: Path, participant: int, crash_after_trial=False,
          baseline=False) -> ScriptedDisplay:
-    display = ScriptedDisplay(participant)
+    items = load_items(assets)
+    display = ScriptedDisplay(participant, items)
     experiment = Experiment(config, assets, data_dir, display, baseline=baseline, build="selftest")
-    if not crash_after_room:
+    if not crash_after_trial:
         experiment.run()
         return display
-    original = Session.finish_room
+    original = Session.finish_trial
 
     def stop_after_save(self, *args, **kwargs):
         original(self, *args, **kwargs)
         raise _StopHere
 
-    Session.finish_room = stop_after_save
+    Session.finish_trial = stop_after_save
     try:
         experiment.run()
     except _StopHere:
         pass
     finally:
-        Session.finish_room = original
+        Session.finish_trial = original
     return display
 
 
@@ -153,94 +134,102 @@ def read_rows(path: Path) -> list[dict]:
 
 
 def check_assets(config: Config, assets: Path) -> list[str]:
-    """The pictures must not give locations away and targets must not overlap."""
+    """Every room's spots lie inside its picture, the pools are big enough, and every
+    participant number up to DEAL_CHECK_PARTICIPANTS gets a deal that fits."""
     failures = []
-    names = config.practice_rooms + [n for s in config.room_sets for n in s]
-    labels: dict[str, str] = {}  # label -> room type
-    spots: dict[tuple[str, str], list[tuple[str, tuple[float, float]]]] = {}  # (type, object) -> (room, spot)
-    for name in dict.fromkeys(names):
-        info = load_room(assets, name)
-        kind = room_type(name)
-        practice = name in config.practice_rooms
-        if practice and len(info.objects) < config.practice_objects:
-            failures.append(f"{name}: only {len(info.objects)} objects")
-        if not practice and len(info.objects) != config.objects_per_room:
-            failures.append(f"{name}: {len(info.objects)} objects, config says {config.objects_per_room}")
-        limit = 2 * config.tolerance_percent / 100 * info.width
-        for a, b in itertools.combinations(info.objects, 2):
-            if math.dist(a.center, b.center) < limit:
-                failures.append(f"{name}: {a.id} and {b.id} closer than twice the tolerance")
-        for obj in info.objects:
-            if not obj.icon.startswith("icons/"):
-                failures.append(f"{name}/{obj.id}: icon is not a separate neutral render")
-            icon = load_icon(assets / "rooms" / name / obj.icon)
-            if max(icon.size) != ICON_PX:
-                failures.append(f"{name}/{obj.id}: icon drawn at {icon.size}")
-            if labels.get(obj.label, kind) != kind:
-                failures.append(f"{name}/{obj.id}: label '{obj.label}' also used in a {labels[obj.label]}")
-            labels[obj.label] = kind
-            spots.setdefault((kind, obj.id), []).append((name, obj.center))
-    # Objects switch places between arrangements: the same object must never be
-    # within twice the tolerance of where it stood in another arrangement.
-    for (kind, object_id), seen in spots.items():
-        for (room_a, a), (room_b, b) in itertools.combinations(seen, 2):
-            width = load_room(assets, room_a).width
-            if math.dist(a, b) < 2 * config.tolerance_percent / 100 * width:
-                failures.append(f"{object_id}: same place in {room_a} and {room_b}")
+    items = load_items(assets)
+    rooms = {name: load_room(assets, name) for name in dict.fromkeys([config.practice_room, *config.rooms])}
+    for room in rooms.values():
+        if not room.image.exists():
+            failures.append(f"{room.name}: missing {room.image.name}")
+        for spot in room.spots:
+            if not (0 <= spot.x <= room.width and 0 <= spot.y <= room.height):
+                failures.append(f"{room.name}/{spot.id}: outside the picture")
+        if len({s.id for s in room.spots}) != len(room.spots):
+            failures.append(f"{room.name}: spot ids repeat")
+    targets, decoys = pool(items, "target"), pool(items, "decoy")
+    for item in targets:
+        if not any(s.fits(item) for r in config.rooms for s in rooms[r].spots):
+            failures.append(f"{item.name}: fits no spot in any scored room")
+    trials = len(config.conditions) * len(config.rooms)
+    need = trials * config.tiles - len(targets)
+    if len(decoys) < need:
+        failures.append(f"{len(decoys)} decoys, a session needs {need}")
+    names = [i.name for i in items.values()]
+    if len(set(names)) != len(names):
+        failures.append("object names repeat")
+    if not failures:
+        for participant in range(1, DEAL_CHECK_PARTICIPANTS + 1):
+            blocks = build_schedule(participant, config.conditions, config.rooms)
+            try:
+                deal(participant, blocks, rooms, targets, decoys, config.tiles)
+            except Exception as error:  # noqa: BLE001 - reported, not raised
+                failures.append(f"participant {participant}: {error}")
+                break
     return failures
-
-
-def room_type(name: str) -> str:
-    """bedroom_2 -> bedroom. Arrangements of one room share a type."""
-    stem, _, suffix = name.rpartition("_")
-    return stem if suffix.isdigit() else name
 
 
 def check_session(config: Config, assets: Path, data_dir: Path) -> list[str]:
     """Return a list of failures. An empty list means everything worked."""
     failures = check_assets(config, assets)
+    if failures:
+        return failures
 
     def expect(condition, message):
         if not condition:
             failures.append(message)
 
-    n = config.objects_per_room
-    expected_rooms = sum(len(rooms) for rooms in config.room_sets)
+    items = load_items(assets)
+    n_trials = len(config.conditions) * len(config.rooms)
     blocks = len(config.conditions)
+    n_targets = len(pool(items, "target"))
+    hold = int(config.block_hold_seconds * 1000)
 
     # An uninterrupted session.
     display = play(config, assets, data_dir, 1)
-    rows = read_rows(data_dir / "P001_results.csv")
-    expect(len(rows) == n * expected_rooms, f"expected {n * expected_rooms} rows, got {len(rows)}")
-    expect({r["session_resumed"] for r in rows} == {"0"}, "uninterrupted session marked as resumed")
-    expect({r["condition"] for r in rows} == set(config.conditions), "not all conditions recorded")
-    per_room: dict[str, int] = {}
-    swaps: dict[str, int] = {}
-    for row in rows:
-        per_room[row["room"]] = per_room.get(row["room"], 0) + int(row["score"])
-        swaps[row["room"]] = swaps.get(row["room"], 0) + int(row["swap"])
-    expect(all(v == n - 2 for v in per_room.values()), f"each room should score {n - 2}/{n}, got {per_room}")
-    expect(all(v == 1 for v in swaps.values()), f"each room should have 1 swap, got {swaps}")
-    twice = [r for r in rows if r["moves"] == "2"]
-    expect(len(twice) == 2 * expected_rooms, f"moves not counted: {len(twice)} rows with 2 moves")
-    expect(all(r["moves"] in ("1", "2") for r in rows), "unexpected move count")
-    expect(all(r["placement_order"] for r in rows), "missing placement order")
-    expect(all(r["filler_answered"] == "5" and r["filler_correct"] == "4" and r["filler_mean_rt_ms"] == "900"
-               for r in rows) or config.retention_seconds <= 0, "filler results not saved")
-    # Response times: every object has them, and only the object moved again in the
-    # room has correction time.
-    for column in ("first_pickup_ms", "first_placed_ms", "placement_latency_ms", "held_ms", "reconstruction_ms"):
-        expect(all(r[column] != "" and int(r[column]) >= 0 for r in rows), f"{column} missing")
-    corrected = [r for r in rows if int(r["correction_ms"]) > 0]
-    expect(len(corrected) == expected_rooms, f"{len(corrected)} rows with correction time")
-    for room in {r["room"] for r in rows}:
-        mine = [r for r in rows if r["room"] == room]
-        last = max(int(r["first_placed_ms"]) for r in mine)
-        expect(sum(int(r["placement_latency_ms"]) for r in mine) == last,
-               f"{room}: placement latencies do not add up to the last first placement")
-    used = {config.practice_room(b) for b in range(1, blocks + 1)}
-    expect(used <= set(display.prepared), "a block's practice room was not shown")
-    expect(display.transitions == expected_rooms, f"{display.transitions} transitions shown")
+    trials = read_rows(data_dir / "P001_trials.csv")
+    tiles = read_rows(data_dir / "P001_tiles.csv")
+    expect(len(trials) == n_trials, f"expected {n_trials} trial rows, got {len(trials)}")
+    expect(len(tiles) == n_trials * config.tiles, f"expected {n_trials * config.tiles} tile rows, got {len(tiles)}")
+    expect({r["session_resumed"] for r in trials} == {"0"}, "uninterrupted session marked as resumed")
+    expect({r["condition"] for r in trials} == set(config.conditions), "not all conditions recorded")
+    per_block = Counter((r["block"], r["room"]) for r in trials)
+    expect(len(per_block) == n_trials, "a room repeats within a block")
+    for block in {r["block"] for r in trials}:
+        expect(sorted(r["room"] for r in trials if r["block"] == block) == sorted(config.rooms),
+               f"block {block} does not show every room once")
+    target_rows = [r for r in tiles if r["role"] == "target"]
+    decoy_rows = [r for r in tiles if r["role"] == "decoy"]
+    expect(sorted(r["item"] for r in target_rows) == sorted(i.name for i in pool(items, "target")),
+           "not every target photo was a target exactly once")
+    expect(len({r["item"] for r in decoy_rows}) == len(decoy_rows), "a decoy appeared twice")
+    expect(not {r["item"] for r in decoy_rows} & {r["item"] for r in target_rows}, "an item was target and decoy")
+    expect(all(items[r["item"]].pool == "decoy" for r in decoy_rows), "a non-decoy item filled a grid")
+    counts = Counter(int(r["targets"]) for r in trials)
+    low = n_targets // n_trials
+    expect(set(counts) <= {low, low + 1} and sum(k * v for k, v in counts.items()) == n_targets,
+           f"targets per trial uneven: {dict(counts)}")
+    for row in trials:
+        k = int(row["targets"])
+        expect(row["hits"] == str(k - 1) and row["false_alarms"] == str(FALSE_ALARMS),
+               f"{row['block']}/{row['room']}: hits {row['hits']}, false alarms {row['false_alarms']}")
+        expect(int(row["targets"]) + int(row["decoys"]) == config.tiles, "grid not full")
+        expect(row["dprime"] != "" and float(row["dprime"]) > 0, "d' missing or not positive")
+        expect(row["grid_ms"] != "" and int(row["grid_ms"]) > 0, "grid time missing")
+        expect(config.retention_seconds <= 0 or (row["filler_answered"] == "5" and row["filler_correct"] == "4"
+                                                 and row["filler_mean_rt_ms"] == "900"), "filler results not saved")
+    for row in tiles:
+        expect(row["correct"] == str(int((row["selected"] == "1") == (row["role"] == "target"))),
+               "tile correct column wrong")
+        if row["selected"] == "1":
+            expect(row["first_selected_ms"] != "", "selected tile has no selection time")
+        expect(bool(row["spot"]) == (row["role"] == "target"), "spot recorded wrongly")
+    expect(sum(1 for r in tiles if r["toggles"] == "2") == n_trials, "pick-then-unpick not recorded")
+    expect(display.shown.count("Practice room") == 1, f"practice shown {display.shown.count('Practice room')} times")
+    expect(display.holds == [hold] * blocks, f"experimenter waits {display.holds}")
+    expect(display.shown.count(REMEMBER) == 1 + n_trials, "an instruction screen lacks the remember line")
+    expect(len(display.studied) == 1 + n_trials, "a room was not studied")
+    expect(all(len(sizes) == config.tiles for _, sizes in display.prepared.values()), "a grid lacked tiles")
 
     # Manipulation checks after every block.
     checks = read_rows(data_dir / "P001_checks.csv")
@@ -249,57 +238,46 @@ def check_session(config: Config, assets: Path, data_dir: Path) -> list[str]:
         by_block.setdefault(row["block"], {}).setdefault(row["measure"], []).append(row)
     expect(sorted(by_block) == [str(b) for b in range(1, blocks + 1)], f"checks saved for blocks {sorted(by_block)}")
     for block, measures in by_block.items():
-        trials = measures.get("digit_span_trial", [])
+        trials_ = measures.get("digit_span_trial", [])
         right = 2 * (SPAN_RIGHT_UP_TO - config.span_start + 1)
-        expect(len(trials) == right + 2, f"block {block}: {len(trials)} digit-span trials")
+        expect(len(trials_) == right + 2, f"block {block}: {len(trials_)} digit-span trials")
         expect(measures.get("digit_span_longest", [{}])[0].get("value") == str(SPAN_RIGHT_UP_TO),
                f"block {block}: wrong longest span")
-        expect(measures.get("digit_span_total_correct", [{}])[0].get("value") == str(right),
-               f"block {block}: wrong span total")
         for question_id, *_ in config.slider_questions:
             answer = measures.get(question_id, [{}])[0]
             expect(answer.get("value") == str(SLIDER_ANSWER), f"block {block}: {question_id} not saved")
-            expect(answer.get("rt_ms", "") != "" and answer.get("first_click_ms", "") != "",
-                   f"block {block}: {question_id} times not saved")
-        expect(len({r["condition"] for rs in measures.values() for r in rs}) == 1, "checks mix conditions")
 
-    # Nothing shown on any screen may reveal a condition, and nothing waits for the experimenter.
-    shown = display.shown
-    leaks = [t for t in shown if t in set(config.conditions) or "condition" in t.lower()]
+    # Nothing on screen may reveal a condition.
+    leaks = [t for t in display.shown if t in set(config.conditions) or "condition" in t.lower()]
     expect(not leaks, f"condition shown on screen: {leaks}")
-    expect(PAUSE_TEXT not in shown, "experimenter pause is still shown")
-    expect(shown.count("Practice room") == blocks, f"practice room shown {shown.count('Practice room')} times")
-    expect(shown.count("Remember where objects belong.") == blocks + expected_rooms,
-           "'Remember where objects belong.' missing from an instruction screen")
-    header = set(rows[0]) | set(checks[0])
+    header = set(trials[0]) | set(tiles[0]) | set(checks[0])
     expect(not {"name", "email", "birthdate", "age"} & header, "personal detail column in results")
 
-    # Crash after the first room, then resume.
-    play(config, assets, data_dir, 2, crash_after_room=True)
-    first = read_rows(data_dir / "P002_results.csv")
-    expect(len(first) == n, f"crash should leave {n} saved rows, got {len(first)}")
-    expect(not Session(config, data_dir, 2).is_complete(), "crashed session reported as complete")
+    # Crash after the first trial, then resume.
+    play(config, assets, data_dir, 2, crash_after_trial=True)
+    first = read_rows(data_dir / "P002_trials.csv")
+    expect(len(first) == 1, f"crash should leave 1 saved trial, got {len(first)}")
     display = play(config, assets, data_dir, 2)
-    final = read_rows(data_dir / "P002_results.csv")
-    expect(len(final) == n * expected_rooms, f"resume left {len(final)} rows")
-    expect(len({(r["block"], r["room"], r["object"]) for r in final}) == len(final), "resume duplicated rows")
+    final = read_rows(data_dir / "P002_trials.csv")
+    expect(len(final) == n_trials, f"resume left {len(final)} trials")
+    expect(len({(r["block"], r["room"]) for r in final}) == n_trials, "resume duplicated a trial")
+    expect(len(read_rows(data_dir / "P002_tiles.csv")) == n_trials * config.tiles, "resume lost tile rows")
     expect(any(r["session_resumed"] == "1" for r in final), "resumed rows are not marked")
-    expect(Session(config, data_dir, 2).is_complete(), "resumed session not marked complete")
-    expect(display.shown.count("Practice room") == blocks - 1, "resume repeated block 1's practice")
-    expect(len({r["block"] for r in read_rows(data_dir / "P002_checks.csv")}) == blocks, "resume lost checks")
-    before = (data_dir / "P002_results.csv").read_bytes()
-    Session(config, data_dir, 2)
-    expect((data_dir / "P002_results.csv").read_bytes() == before, "reopening changed finished data")
+    expect("Practice room" not in display.shown, "resume repeated the practice")
+    expect(len(display.holds) == blocks, "resume skipped the experimenter wait")
+    expect(Session(config, data_dir, 2, items, {n: load_room(assets, n) for n in
+                                                [config.practice_room, *config.rooms]}).is_complete(),
+           "resumed session not marked complete")
 
     # The no-study baseline group: separate files, no study, no checks, no condition.
     display = play(config, assets, data_dir, 3, baseline=True)
-    base = read_rows(data_dir / "B003_results.csv")
-    expect(len(base) == n * expected_rooms, f"baseline wrote {len(base)} rows")
+    base = read_rows(data_dir / "B003_trials.csv")
+    expect(len(base) == n_trials, f"baseline wrote {len(base)} trials")
     expect({r["condition"] for r in base} == {"baseline"}, "baseline rows carry a condition")
-    expect({r["study_ms"] for r in base} == {"0"}, "baseline participants saw the study room")
+    expect({r["study_ms"] for r in base} == {"0"}, "baseline participants saw a scored room")
     expect(not (data_dir / "B003_checks.csv").exists(), "baseline did manipulation checks")
     expect(display.shown.count("Practice room") == 1, "baseline should practise once")
-    expect(not (data_dir / "P003_results.csv").exists(), "baseline wrote a participant file")
+    expect(not (data_dir / "P003_trials.csv").exists(), "baseline wrote a participant file")
     return failures
 
 

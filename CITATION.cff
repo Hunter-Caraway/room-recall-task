@@ -1,13 +1,13 @@
 cff-version: 1.2.0
 message: "If you use this task in research, please cite it as below and name it in your Methods section."
 type: software
-title: "Room Recall Task: an object-location memory task for colored-noise research"
+title: "Room Recall Task: an object recognition memory task for colored-noise research"
 abstract: >-
-  An object-location memory task for in-lab studies. Participants study a
-  realistic rendered room, complete a short filled delay, then drag each object
-  from a tray back to where it was in the now-empty room. Runs on PsychoPy or
-  pygame, with counterbalanced conditions, manipulation checks and per-object
-  error data.
+  An object recognition memory task for in-lab studies. Participants study a
+  rendered basement holding photos of everyday objects, complete a short filled
+  delay, then pick the objects they saw from a grid with decoys. Runs on PsychoPy or
+  pygame, with counterbalanced conditions, manipulation checks and per-tile
+  recognition data.
 authors:
   - family-names: Caraway
     given-names: Hunter
@@ -18,8 +18,41 @@ url: "https://github.com/Hunter-Caraway/room-recall-task"
 license: MIT
 date-released: 2026-11-11
 keywords:
-  - object-location memory
+  - recognition memory
   - spatial memory
   - colored noise
   - PsychoPy
   - experiment
+references:
+  - type: article
+    title: "The Bank of Standardized Stimuli (BOSS), a new set of 480 normative photos of objects to be used as visual stimuli in cognitive research"
+    authors:
+      - family-names: Brodeur
+        given-names: Mathieu B.
+      - family-names: Dionne-Dostie
+        given-names: Emmanuelle
+      - family-names: Montreuil
+        given-names: Tina
+      - family-names: Lepage
+        given-names: Martin
+    journal: PLoS ONE
+    volume: 5
+    issue: 5
+    start: e10773
+    year: 2010
+    doi: 10.1371/journal.pone.0010773
+  - type: article
+    title: "Bank of Standardized Stimuli (BOSS) phase II: 930 new normative photos"
+    authors:
+      - family-names: Brodeur
+        given-names: Mathieu B.
+      - family-names: Guérard
+        given-names: Katherine
+      - family-names: Bouras
+        given-names: Maria
+    journal: PLoS ONE
+    volume: 9
+    issue: 9
+    start: e106953
+    year: 2014
+    doi: 10.1371/journal.pone.0106953

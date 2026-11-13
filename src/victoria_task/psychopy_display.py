@@ -16,8 +16,7 @@ from psychopy import core, event, logging, visual
 from .checks import CONTINUE_RECT, SLIDER_LEFT, SLIDER_RIGHT, SLIDER_Y, SliderController
 from .filler import FillerResult, Problem
 from .flow import QuitSession
-from .layout import CANVAS, DONE_RECT, ROOM_ORIGIN, ROOM_SIZE, TRAY_HEIGHT, TRAY_TOP, Icon, PlacementController
-from .session import RoomInfo
+from .grid import CANVAS, DONE_RECT, PROMPT, PROMPT_Y, ROOM_ORIGIN, ROOM_SIZE, GridController
 
 
 def rgb(r, g, b):
@@ -26,7 +25,8 @@ def rgb(r, g, b):
 
 
 BG = rgb(18, 18, 20)
-TRAY_BG = rgb(40, 41, 45)
+SELECTED = rgb(250, 200, 60)
+TILE_EDGE = rgb(90, 92, 96)
 TEXT = rgb(232, 232, 228)
 MUTED = rgb(160, 160, 158)
 ENTRY = rgb(250, 220, 130)
@@ -57,14 +57,11 @@ class PsychoPyDisplay:
             on_mouse_motion=self._on_motion, on_mouse_drag=self._on_drag,
             on_key_press=self._on_key, on_text=self._on_text, on_close=self._on_close,
         )
-        self.rooms: dict[str, dict] = {}
-        self.transition_frames: list[visual.ImageStim] = []
+        self.trials: dict[str, dict] = {}
         self._text = visual.TextStim(self.win, text="", color=TEXT, font="Arial", wrapWidth=1700 * self.scale)
-        self.tray = self._rect((0, TRAY_TOP, CANVAS[0], TRAY_HEIGHT), TRAY_BG)
-        self.done = self._rect(DONE_RECT, BUTTON_OFF)
+        self.done = self._rect(DONE_RECT, BUTTON)
         self.done_label = visual.TextStim(self.win, text="Done", font="Arial", height=44 * self.scale,
                                           pos=self.pos(DONE_RECT[0] + DONE_RECT[2] / 2, DONE_RECT[1] + DONE_RECT[3] / 2))
-        self.cover = self._rect((*ROOM_ORIGIN, *ROOM_SIZE), [-1, -1, -1])
 
     # ------------------------------------------------------------ coordinates
     def pos(self, x: float, y: float) -> tuple[float, float]:
@@ -146,9 +143,10 @@ class PsychoPyDisplay:
             self._text.draw()
             y += h
 
-    def message(self, lines, key: str) -> None:
+    def message(self, lines, key: str, hold_ms: int = 0) -> None:
         self.events()
         shot = True
+        shown = self.now_ms()
         while True:
             self._draw_lines(lines)
             self.win.flip()
@@ -156,7 +154,7 @@ class PsychoPyDisplay:
                 self.screenshot("message")
                 shot = False
             for kind, value, _ in self.events():
-                if kind == "key" and value == key:
+                if kind == "key" and value == key and self.now_ms() - shown >= hold_ms:
                     return
 
     def enter_participant(self) -> int:
@@ -192,36 +190,26 @@ class PsychoPyDisplay:
                 if kind == "key" and value == "escape":
                     return False
 
-    # ------------------------------------------------------------ rooms
-    def prepare(self, room: RoomInfo, icons: dict[str, Icon]) -> None:
-        base = self.assets / "rooms" / room.name
+    # ------------------------------------------------------------ trials
+    def prepare(self, key: str, room, tiles: list) -> None:
         area = (*ROOM_ORIGIN, *ROOM_SIZE)
-        self.rooms[room.name] = {
-            "full": self._image(str(base / "full.jpg"), area, interpolate=self.scale != 1),
-            "empty": self._image(str(base / "empty.jpg"), area, interpolate=self.scale != 1),
-            "icons": {oid: self._image(icon.image, (0, 0, *icon.size)) for oid, icon in icons.items()},
-        }
+        self.trials = {key: {"room": self._image(room, area, interpolate=self.scale != 1), "tiles": tiles}}
 
-    def study(self, room: RoomInfo, seconds: float, cut_to_empty: bool):
-        stims = self.rooms[room.name]
+    def study(self, key: str, seconds: float):
+        room = self.trials[key]["room"]
         self.events()
         self.win.recordFrameIntervals = True
         dropped_before = self.win.nDroppedFrames
-        stims["full"].draw()
-        self.tray.draw()
+        room.draw()
         self.win.flip()
         started = core.getTime()
-        self.screenshot(f"{room.name}_study")
+        self.screenshot(f"{key.replace('/', '_')}_study")
         while core.getTime() - started < seconds:
-            stims["full"].draw()
-            self.tray.draw()
+            room.draw()
             self.win.flip()
             self.events()  # mouse and keys do nothing here, but quitting still works
-        if cut_to_empty:
-            stims["empty"].draw()
-            self.tray.draw()
         before = core.getTime()
-        self.win.flip()
+        self.win.flip()  # blank
         ended = core.getTime()
         self.win.recordFrameIntervals = False
         dropped = self.win.nDroppedFrames - dropped_before
@@ -251,64 +239,36 @@ class PsychoPyDisplay:
                     break
         return result
 
-    def placement(self, room: RoomInfo, controller: PlacementController) -> None:
-        stims = self.rooms[room.name]
-        icons = stims["icons"]
+    def grid(self, key: str, controller: GridController) -> None:
+        s = self.scale
+        tiles = [self._image(image, rect) for image, rect in zip(self.trials[key]["tiles"], controller.rects)]
+        frames = []
+        for x, y, w, h in controller.rects:
+            frames.append((
+                visual.Rect(self.win, width=(w + 12) * s, height=(h + 12) * s, pos=self.pos(x + w / 2, y + h / 2),
+                            fillColor=None, lineColor=SELECTED, lineWidth=8 * s),
+                visual.Rect(self.win, width=(w + 4) * s, height=(h + 4) * s, pos=self.pos(x + w / 2, y + h / 2),
+                            fillColor=None, lineColor=TILE_EDGE, lineWidth=2 * s),
+            ))
+        prompt = visual.TextStim(self.win, text=PROMPT, font="Arial", color=TEXT, height=30 * s,
+                                 wrapWidth=1700 * s, pos=self.pos(CANVAS[0] / 2, PROMPT_Y))
         self.events()
         first = True
         while True:
             for kind, value, at in self.events():
-                if kind == "move":
-                    controller.move(value)
-                elif kind == "press":
-                    if controller.press(value, at):
-                        self.screenshot(f"{room.name}_placed")
-                        return
-                elif kind == "release":
-                    controller.release(value, at)
-            stims["empty"].draw()
-            for oid in controller.stacking:
-                icons[oid].pos = self.pos(*controller.placed_centre(oid))
-                icons[oid].draw()
-            self.tray.draw()
-            for obj in controller.order:
-                if controller.in_tray(obj.id):
-                    icons[obj.id].pos = self.pos(*controller.slots[obj.id])
-                    icons[obj.id].draw()
-            ready = controller.round.can_finish
-            self.done.fillColor = BUTTON if ready else BUTTON_OFF
-            self.done_label.color = TEXT if ready else MUTED
+                if kind == "press" and controller.press(value, at):
+                    self.screenshot(f"{key.replace('/', '_')}_answered")
+                    return
+            prompt.draw()
+            for image, (chosen, plain), state in zip(tiles, frames, controller.tiles):
+                image.draw()
+                (chosen if state.selected else plain).draw()
             self.done.draw()
             self.done_label.draw()
-            if controller.dragging:
-                icons[controller.dragging].pos = self.pos(*controller.dragged_centre())
-                icons[controller.dragging].draw()
             self.win.flip()
             if first:
-                self.screenshot(f"{room.name}_tray")
+                self.screenshot(f"{key.replace('/', '_')}_grid")
                 first = False
-
-    def transition(self, seconds: float) -> None:
-        if not self.transition_frames:
-            area = (*ROOM_ORIGIN, *ROOM_SIZE)
-            self.transition_frames = [
-                self._image(str(p), area) for p in sorted((self.assets / "transition").glob("*.jpg"))
-            ]
-        frames = self.transition_frames
-        started = core.getTime()
-        shot = False
-        while (elapsed := core.getTime() - started) < seconds:
-            self.events()
-            t = elapsed / seconds
-            frames[min(int(t * len(frames)), len(frames) - 1)].draw()
-            edge = min(t, 1 - t) / 0.08  # fade in and out over the first and last 8%
-            if edge < 1:
-                self.cover.opacity = 1 - edge
-                self.cover.draw()
-            self.win.flip()
-            if not shot and t > 0.5:
-                self.screenshot("transition")
-                shot = True
 
     # ------------------------------------------------------------ manipulation checks
     def _hold(self, lines, seconds: float) -> None:

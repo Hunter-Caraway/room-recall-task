@@ -16,17 +16,16 @@ import pygame
 from .checks import CONTINUE_RECT, SLIDER_LEFT, SLIDER_RIGHT, SLIDER_Y, SliderController
 from .filler import FillerResult, Problem
 from .flow import QuitSession
-from .layout import CANVAS, DONE_RECT, ROOM_ORIGIN, ROOM_SIZE, TRAY_HEIGHT, TRAY_TOP, Icon, PlacementController
-from .session import RoomInfo
+from .grid import CANVAS, DONE_RECT, PROMPT, PROMPT_Y, ROOM_ORIGIN, GridController
 
 BG = (18, 18, 20)
-TRAY_BG = (40, 41, 45)
 TEXT = (232, 232, 228)
 MUTED = (160, 160, 158)
 ENTRY = (250, 220, 130)
 BUTTON = (70, 140, 90)
 BUTTON_OFF = (70, 72, 76)
-TRAY_RECT = pygame.Rect(0, TRAY_TOP, CANVAS[0], TRAY_HEIGHT)
+SELECTED = (250, 200, 60)
+TILE_EDGE = (90, 92, 96)
 DONE = pygame.Rect(DONE_RECT)
 FPS = 60
 KEYS = {pygame.K_SPACE: "space", pygame.K_F8: "f8", pygame.K_ESCAPE: "escape",
@@ -51,8 +50,7 @@ class PygameDisplay:
         self.colors = {"title": TEXT, "body": TEXT, "muted": MUTED, "entry": ENTRY, "digit": TEXT}
         self.screenshots = screenshots
         self._shot_count = 0
-        self.rooms: dict[str, dict] = {}
-        self.transition_frames: list[pygame.Surface] = []
+        self.trials: dict[str, dict] = {}
 
     # ------------------------------------------------------------ input
     def events(self) -> list[tuple]:
@@ -90,16 +88,18 @@ class PygameDisplay:
             self.screen.blit(surface, surface.get_rect(midtop=(CANVAS[0] // 2, y)))
             y += h
 
-    def message(self, lines, key: str) -> None:
+    def message(self, lines, key: str, hold_ms: int = 0) -> None:
         self.events()
         shot = True
+        shown = self.now_ms()
         while True:
             self._draw_lines(lines)
             pygame.display.flip()
             if shot:
                 self.screenshot("message")
                 shot = False
-            if any(kind == "key" and value == key for kind, value, _ in self.events()):
+            pressed = any(kind == "key" and value == key for kind, value, _ in self.events())
+            if pressed and self.now_ms() - shown >= hold_ms:
                 return
             self.clock.tick(FPS)
 
@@ -138,42 +138,29 @@ class PygameDisplay:
                     return False
             self.clock.tick(FPS)
 
-    # ------------------------------------------------------------ rooms
-    def prepare(self, room: RoomInfo, icons: dict[str, Icon]) -> None:
-        base = self.assets / "rooms" / room.name
-        self.rooms[room.name] = {
-            "full": pygame.image.load(base / "full.jpg").convert(),
-            "empty": pygame.image.load(base / "empty.jpg").convert(),
-            "icons": {
-                oid: pygame.transform.smoothscale(
-                    pygame.image.frombytes(icon.image.tobytes(), icon.image.size, "RGBA").convert_alpha(),
-                    icon.size)
-                for oid, icon in icons.items()
-            },
-        }
+    # ------------------------------------------------------------ trials
+    @staticmethod
+    def _surface(image):
+        return pygame.image.frombytes(image.tobytes(), image.size, "RGB").convert()
 
-    def _room(self, picture) -> None:
-        self.screen.fill(BG)
-        self.screen.blit(picture, ROOM_ORIGIN)
-        pygame.draw.rect(self.screen, TRAY_BG, TRAY_RECT)
+    def prepare(self, key: str, room, tiles: list) -> None:
+        self.trials = {key: {"room": self._surface(room), "tiles": [self._surface(t) for t in tiles]}}
 
-    def study(self, room: RoomInfo, seconds: float, cut_to_empty: bool):
-        """Show the full room, then cut on the first flip at or after the deadline.
-        The wait loop is uncapped (vsync-limited where available), so the cut lands
-        within about one display frame. Dropped frames are not measured here."""
-        stims = self.rooms[room.name]
+    def study(self, key: str, seconds: float):
+        """Show the room, then cut to a blank screen on the first flip at or after the
+        deadline. The wait loop is uncapped (vsync-limited where available), so the cut
+        lands within about one display frame. Dropped frames are not measured here."""
+        room = self.trials[key]["room"]
         self.events()
-        self._room(stims["full"])
+        self.screen.fill(BG)
+        self.screen.blit(room, ROOM_ORIGIN)
         pygame.display.flip()
         started = self.now_ms()
-        self.screenshot(f"{room.name}_study")
+        self.screenshot(f"{key.replace('/', '_')}_study")
         while self.now_ms() - started < seconds * 1000:
             self.events()  # mouse and keys do nothing here, but quitting still works
             pygame.time.wait(1)
-        if cut_to_empty:
-            self._room(stims["empty"])
-        else:
-            self.screen.fill(BG)
+        self.screen.fill(BG)
         before = self.now_ms()
         pygame.display.flip()
         ended = self.now_ms()
@@ -204,69 +191,32 @@ class PygameDisplay:
             self.clock.tick(FPS)
         return result
 
-    def placement(self, room: RoomInfo, controller: PlacementController) -> None:
-        stims = self.rooms[room.name]
-        icons = stims["icons"]
+    def grid(self, key: str, controller: GridController) -> None:
+        tiles = self.trials[key]["tiles"]
+        prompt = self.fonts["body"].render(PROMPT, True, TEXT)
+        label = self.fonts["title"].render("Done", True, TEXT)
         self.events()
         first = True
-
-        def blit(oid, centre):
-            surface = icons[oid]
-            self.screen.blit(surface, surface.get_rect(center=(round(centre[0]), round(centre[1]))))
-
         while True:
             for kind, value, at in self.events():
-                if kind == "move":
-                    controller.move(value)
-                elif kind == "press":
-                    if controller.press(value, at):
-                        self.screenshot(f"{room.name}_placed")
-                        return
-                elif kind == "release":
-                    controller.release(value, at)
-            self._room(stims["empty"])
-            for oid in controller.stacking:
-                blit(oid, controller.placed_centre(oid))
-            for obj in controller.order:
-                if controller.in_tray(obj.id):
-                    blit(obj.id, controller.slots[obj.id])
-            ready = controller.round.can_finish
-            pygame.draw.rect(self.screen, BUTTON if ready else BUTTON_OFF, DONE, border_radius=10)
-            label = self.fonts["title"].render("Done", True, TEXT if ready else MUTED)
+                if kind == "press" and controller.press(value, at):
+                    self.screenshot(f"{key.replace('/', '_')}_answered")
+                    return
+            self.screen.fill(BG)
+            self.screen.blit(prompt, prompt.get_rect(center=(CANVAS[0] // 2, PROMPT_Y)))
+            for surface, rect, state in zip(tiles, controller.rects, controller.tiles):
+                box = pygame.Rect(rect)
+                self.screen.blit(surface, box)
+                if state.selected:
+                    pygame.draw.rect(self.screen, SELECTED, box.inflate(12, 12), 8, border_radius=6)
+                else:
+                    pygame.draw.rect(self.screen, TILE_EDGE, box.inflate(4, 4), 2)
+            pygame.draw.rect(self.screen, BUTTON, DONE, border_radius=10)
             self.screen.blit(label, label.get_rect(center=DONE.center))
-            if controller.dragging:
-                blit(controller.dragging, controller.dragged_centre())
             pygame.display.flip()
             if first:
-                self.screenshot(f"{room.name}_tray")
+                self.screenshot(f"{key.replace('/', '_')}_grid")
                 first = False
-            self.clock.tick(FPS)
-
-    def load_transition(self) -> None:
-        folder = self.assets / "transition"
-        self.transition_frames = [pygame.image.load(p).convert() for p in sorted(folder.glob("*.jpg"))]
-
-    def transition(self, seconds: float) -> None:
-        if not self.transition_frames:
-            self.load_transition()
-        frames = self.transition_frames
-        fade = pygame.Surface(ROOM_SIZE)
-        fade.fill((0, 0, 0))
-        started = self.now_ms()
-        shot = False
-        while (elapsed := self.now_ms() - started) < seconds * 1000:
-            self.events()
-            t = elapsed / (seconds * 1000)
-            self.screen.fill(BG)
-            self.screen.blit(frames[min(int(t * len(frames)), len(frames) - 1)], ROOM_ORIGIN)
-            edge = min(t, 1 - t) / 0.08  # fade in and out over the first and last 8%
-            if edge < 1:
-                fade.set_alpha(int(255 * (1 - edge)))
-                self.screen.blit(fade, ROOM_ORIGIN)
-            pygame.display.flip()
-            if not shot and t > 0.5:
-                self.screenshot("transition")
-                shot = True
             self.clock.tick(FPS)
 
     # ------------------------------------------------------------ manipulation checks

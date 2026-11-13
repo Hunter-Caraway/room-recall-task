@@ -1,45 +1,32 @@
 # Study settings. Edit this file to change the study; no code changes needed.
+# The design and the reasons behind it are in docs/RECOGNITION_DESIGN.md.
 
 [study]
 # Labels only. The game plays no audio and never shows these to participants.
 # Keep the key to what each label means outside this project.
-# One room set per condition. Each set holds one arrangement of each room type: the
-# same three rooms, with the scored objects in different places in each arrangement,
-# so nothing learned in one condition helps in the next.
 conditions = ["A", "B", "C"]
-room_sets = [
-  ["bedroom_1", "living_room_1", "garage_1"],
-  ["bedroom_2", "living_room_2", "garage_2"],
-  ["bedroom_3", "living_room_3", "garage_3"],
-]
-# Scored objects in each room. The rooms are rendered with exactly this many, so
-# changing it means re-rendering (art/render_all.sh). The self-test checks they match.
-objects_per_room = 6
-# Three conditions give 6 condition orders x 3 room-set rotations = 18 cells.
-# 120 participants gives exactly 20 per condition order; 126 would fill every cell equally.
+# Every block shows each of these rooms once, in an order that rotates across
+# participants. Each room shows different target photos every time.
+rooms = ["storage", "laundry", "workshop"]
+# Three conditions give 6 condition orders; 120 participants is 20 per order.
 participants_on_run_sheet = 120
 
 [timing]
-# PLACEHOLDER until the encoding time is justified from the literature.
 study_seconds = 30
-# Filled delay between study and test, in seconds: quick true/false sums with no
-# spatial content. Set to 0 to go straight from the full room to the empty room.
+# Quick true/false sums on a blank screen between the room and the grid.
 retention_seconds = 30
-transition_seconds = 3
+# At the start of every block, the "Please wait for the experimenter" screen ignores F8
+# for this long after it appears, so the participant settles into the noise first.
+block_hold_seconds = 10
 
-[scoring]
-# Secondary outcome only. An object scores 1 within this distance of its spot, as a
-# percent of room width (5% = 80 px of a 1600 px room). The primary outcome is the
-# continuous distance_pct, which needs no threshold. Raw positions are saved, so this
-# can be changed during analysis without rerunning anyone.
-tolerance_percent = 5
+[grid]
+# Tiles in the recognition grid: the room's targets plus decoys.
+columns = 6
+rows = 4
 
 [practice]
-# A short unscored room opens every condition block, so the participant settles into
-# the noise before the scored rooms. Block 1 uses the first room, block 2 the second,
-# and so on. Their objects never appear in the scored rooms. Practice is not saved.
-rooms = ["hallway_1", "hallway_2", "hallway_3"]
-objects = 5
+# One practice room at the start of the session, before any noise. Not saved.
+room = "practice"
 retention_seconds = 10
 
 [checks]

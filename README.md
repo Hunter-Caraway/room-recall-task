@@ -2,185 +2,152 @@
 
 By **Hunter Caraway** ([hcaraway5705@floridapoly.edu](mailto:hcaraway5705@floridapoly.edu)), https://github.com/Hunter-Caraway/room-recall-task
 
-An original object-location memory task for an in-lab psychology study on colored
-noise. Participants study a realistic room, do a short distractor task, then drag each
-object from a tray back to where it was in the now-empty room. It runs on
-[PsychoPy](https://www.psychopy.org).
+An object recognition memory task for an in-lab psychology study on colored noise.
+Participants study a realistic basement holding photos of everyday objects, do 30 seconds
+of quick sums on a blank screen, then click every object they saw in a 6x4 grid where the
+room's objects are mixed in with decoys. It runs on [PsychoPy](https://www.psychopy.org),
+or as a single Windows .exe.
 
-This is the **9-room build**: three conditions, each with a bedroom, a living room and a
-garage. The three rooms are the same in every condition, but the scored objects stand in
-different places in each, so nothing learned in one condition helps in the next. The design
-choices, and the research behind them, are in `docs/research/`.
+The full design, and the reasons behind it, are in `docs/RECOGNITION_DESIGN.md`.
 
 ## Session flow
 
 1. The experimenter types the participant number.
-2. Each block (one condition) runs without any pause screen:
-   1. **Practice room** (a hallway, 5 objects that never appear in a scored room), with the instruction "Remember where objects belong." Practice is not saved. **Set the noise for this block, from the run sheet, while this screen is up.**
-   2. Three scored rooms in a shuffled order. Each room: study the furnished room for 30 seconds, then 30 seconds of quick sums (Y = right, N = wrong), then drag the 6 objects from the tray into the empty room and press Done. A 3-second hallway walk plays between rooms.
-   3. Manipulation checks, with the block's noise still on: backward digit span, then two 0-100 sliders (how loud, how annoying was the noise).
-3. After the third block, the end screen waits for the experimenter (F8).
+2. **One practice room**, with no noise playing. Not saved.
+3. Three blocks, one per noise condition. Each block:
+   1. `Please wait for the experimenter`: start the noise for this block (from the run sheet), then press **F8**. F8 only works after the screen has been up for 10 seconds, so the participant settles into the noise first.
+   2. Three basements (storage, laundry, workshop), in an order that rotates across participants. Each one: instructions, **30 s** studying the room, **30 s** of sums on a blank screen (Y = right, N = wrong), then the grid: click every object that was in the room, click again to undo, press Done.
+   3. Manipulation checks, noise still on: backward digit span, then two 0-100 sliders (how loud, how annoying).
+4. The end screen waits for the experimenter (F8).
 
-Participants are never shown a condition; they are only told they will hear noise. The game
-plays no audio; noise is controlled outside it.
-
-The 30-second study time is a placeholder until it is justified from the literature
-(`study_seconds` in `config.toml`).
+Participants never see a condition. The game plays no audio; noise is controlled outside it.
 
 ## Session length
 
-About **30 to 35 minutes** on screen; plan about 45 minutes per lab visit with consent and debrief.
+About **25 to 30 minutes** on screen; plan about 40 minutes per visit with consent and debrief.
 
 | Part | Each | Count | Total |
 | --- | --- | --- | --- |
-| Practice room (instructions, 30 s study, 10 s sums, place 5 objects, walk) | ~1.6 min | 3 | ~5 min |
-| Scored room (instructions, 30 s study, 30 s sums, place 6 objects, 3 s walk) | ~2.3 min | 9 | ~21 min |
-| Manipulation checks (backward digit span, 2 sliders) | ~2 min | 3 | ~6 min |
-| Experimenter sets the noise, presses F8 | ~0.5 min | 3 | ~1.5 min |
+| Practice room (instructions, 30 s study, 10 s sums, grid) | ~1.5 min | 1 | ~1.5 min |
+| Scored room (instructions, 30 s study, 30 s sums, grid) | ~2 min | 9 | ~18 min |
+| Manipulation checks (digit span, 2 sliders) | ~2 min | 3 | ~6 min |
+| Experimenter starts the noise, 10 s hold, F8 | ~0.5 min | 3 | ~1.5 min |
 
-Placement speed varies most; slow participants can add about 5 minutes.
+## The pictures
 
-## Why the objects look the way they do
-
-Objects in the tray, and objects once placed, are separate studio renders of each object:
-one camera angle, one light and one size for every object. If they were cut out of the room
-render, their angle, lean and size would show where in the room they came from, so a
-participant could place them without remembering anything. The cost is that a placed object
-does not match the room's perspective.
+- **Targets:** 42 photos from the Bank of Standardized Stimuli (BOSS; Brodeur et al., 2010, 2014; CC BY-SA 3.0).
+  They are cut out of their white background and placed into the rooms when the session
+  runs, at real-world size, on a spot that suits them (floor, table, shelf, wall, or leaning
+  on a wall), tinted by the light at that spot, with a contact shadow. A photo is turned in
+  the picture plane only where `art/dataset_photos.csv` says so, and is never mirrored.
+- **Deal:** the participant number shares the 42 photos over the 9 scored rooms (six get 5,
+  three get 4). Each photo is a target exactly once per participant.
+- **Decoys:** about 190 made objects, shot in Blender in the dataset's style (white
+  background, soft product light, three-quarter view). Each grid is filled up to 24 with
+  decoys; a decoy appears at most once per participant and is never in any room.
+- **Filler:** the smaller clutter in each room is made the same way as the decoys and added
+  with the same code as the targets, so the photos do not stand out. Filler and decoys are
+  separate pools.
+- **Grid tiles** show each object as photographed (never turned), on white.
 
 ## Experimenter controls
 
 | Key | Action |
 | --- | --- |
-| F8 | Resume an unfinished session, or close the end screen |
+| F8 | Continue past the experimenter screen, resume an unfinished session, close the end screen |
 | Space | Participant starts a room or a check after reading the instructions |
 | Y / N | Participant answers a sum |
+| Mouse | Click grid tiles, Done, sliders |
 | Digits, Backspace, Enter | Participant types a digit-span answer |
 | Ctrl+Shift+Q | Quit at any time. Finished rooms stay saved |
 
-## Running it on the Windows lab PC
+## Running it on Windows
 
-There are two builds. They show the same screens, use the same rooms and write the same
-data files; only the drawing library differs.
+1. On GitHub, click **Code**, then **Download ZIP**.
+2. Right-click the zip, choose **Extract All**, and open the extracted folder.
+3. Double-click **`Run Task.bat`** (`Run Baseline.bat` for the baseline group).
 
-- **`MemoryTask-Windows-exe`**: one `MemoryTask.exe`, nothing to install. Draws with pygame.
-  Double-click it; `MemoryTask.exe --self-test` writes `selftest.log`. An edited
-  `config.toml` next to the .exe overrides the built-in one. It does not record dropped
-  display frames (`study_dropped_frames` is empty).
-- **`MemoryTask-Windows-PsychoPy`**: the PsychoPy version, below.
+The first run needs internet once and takes about a minute. It sets up a private copy of
+Python 3.11 with pygame in a `runtime` folder inside the task folder. It needs no admin
+rights and changes nothing else on the computer. Every download is checked against a fixed
+checksum (`windows/setup_runtime.ps1`). After that it starts straight away, with or without
+internet. Data goes to the `data` folder next to `Run Task.bat`. If Windows warns about
+a file from the internet, choose **More info**, then **Run anyway**.
 
-Use one build for every participant in a study, and say which in the write-up; the `build`
-column records it.
+`Self Test.bat` runs scripted sessions with no window and should end with
+`SELF TEST PASSED`. From a command prompt, `"Run Task.bat" --windowed` runs in a window.
 
-### PsychoPy build
+Other builds (from GitHub Actions; the screens and data files are the same):
 
-1. Install **PsychoPy Standalone 2026.2.5, the Python 3.11 version**, from the PsychoPy download page (once).
-2. Unzip the `MemoryTask-Windows` folder somewhere the account can write to.
-3. Double-click `Run Task.bat`.
+- **`MemoryTask-Windows-exe`**: one `MemoryTask.exe`, nothing to download on first run.
+- **`MemoryTask-Windows-PsychoPy`**: draws with PsychoPy and records dropped display
+  frames. Needs **PsychoPy Standalone 2026.2.5 (Python 3.11)** installed.
 
-Other launchers: `Run Baseline.bat` (no-study group, see below), `Self Test.bat`
-(scripted sessions, writes `selftest.log`) and `Smoke Test.bat` (opens the window and loads
-every picture). If PsychoPy is installed somewhere unusual, write the full path of its
-`python.exe` into `psychopy_python.txt` in the same folder. Run `docs/LAB_CHECKLIST.md`
-before the first participant.
+Use one build for every participant in a study; the `build` column records which one
+(`pygame` or `psychopy`). Run `docs/LAB_CHECKLIST.md` before the first participant.
 
 ## Files written to `data/`
 
-- `run_sheet.csv`: **experimenter only.** Each participant's condition for each block.
-- `P001_results.csv`: one row per object for that participant.
-- `P001_checks.csv`: the manipulation checks, one row per digit-span trial, per span score and per slider.
-- `P001_state.json`: progress, used to resume after a crash.
-- `B001_...`: the same files for the baseline group.
-- `error_log.txt`: appears only if the game crashes.
+- `run_sheet.csv`: **experimenter only.** Each participant's condition and room order per block.
+- `P001_trials.csv`: one row per scored room. Targets, decoys, hits, false alarms, raw hit
+  and false-alarm rates, `dprime` and `criterion` (log-linear corrected: add 0.5 to counts
+  and 1 to totals), number selected, `grid_ms` (grid on screen to Done), study and delay
+  timing, sum results, and the condition and room order.
+- `P001_tiles.csv`: one row per grid tile. Item, label, category, `role` (target or decoy),
+  `spot` and `rotate_deg` for targets, `selected`, `correct`, `first_selected_ms`,
+  `last_toggle_ms`, `toggles`.
+- `P001_checks.csv`: digit-span trials and scores, and the slider answers.
+- `P001_state.json`: progress and the whole deal, used to resume after a crash.
+- `B001_...`: the same for the baseline group. `error_log.txt` only if the game crashes.
 
 Keep the key to what A, B and C mean somewhere else.
 
-Main results columns:
+## Baseline group
 
-- `distance_pct` (primary outcome): distance from the right spot, as a percent of room width. Continuous, so it needs no threshold. `distance_px` is the same in pixels of the 1600 px room.
-- `score` (secondary outcome): 1 if within `tolerance_pct`, else 0. 5% of a 1600 px room is 80 px, a little less than the 100 px an object is drawn at. The threshold is a convention, not a finding; raw positions are saved, so it can be changed or dropped at analysis.
-- `nearest_other`, `nearest_other_distance_pct`, `swap`: `swap` is 1 when an object missed its own spot but landed on another object's spot (it remembered the location, not which object).
-- Response times, all in ms from the empty room appearing unless noted:
-  - `reconstruction_ms`: total time to place every object and press Done.
-  - `first_pickup_ms`, `first_placed_ms`: when the object was first picked up and first dropped in the room.
-  - `placement_latency_ms`: time from the previous object's first placement (or from the start, for the first) to this object's first placement.
-  - `held_ms`: total time spent dragging the object. `correction_ms`: the part of that spent moving it after its first placement.
-  - `last_placed_ms`, `moves`, `placement_order`.
-- `study_ms`, `study_end_frame_ms`, `study_dropped_frames`: measured study time and display frame drops.
-- `retention_ms`, `filler_answered`, `filler_correct`, `filler_mean_rt_ms`: the delay, how many sums were done, and the mean time per answer.
-- `session_resumed`, and the condition and room order this participant received.
-
-Check columns (`P001_checks.csv`): `measure` is `digit_span_trial` (with `length`,
-`sequence`, `response`, `correct`, `rt_ms`), `digit_span_longest` and
-`digit_span_total_correct` (in `value`), or a slider id such as `loudness` and `annoyance`
-(`value` 0-100, `first_click_ms`, `rt_ms` from the question appearing to Continue).
-
-## Baseline group (guessing)
-
-Realistic rooms let people place some objects by common sense (a pan goes on the stove).
-`Run Baseline.bat` runs the same task for people who **never see the full rooms**: they
-practise once, then place each object where they think it belongs. There are no
-manipulation checks. Their placements give
-the chance level per object. Replace any object whose guesses land on its true spot, and
-compare participants' errors against this group. About 10 to 15 people is a reasonable
-start; they should not also take part in the main study.
+`Run Baseline.bat` shows the grids to people who **never see the rooms**: they practise
+once, then pick the objects they guess were in a room they have not seen. No checks, no
+noise. If they pick the dataset photos more often than the decoys, the made decoys can be
+told apart from real photos and must be fixed before the main study. About 10 to 15
+people, not also in the main study.
 
 ## Changing the study
 
-Edit `config.toml`: conditions, room sets, objects per room, study time, delay, transition
-time, tolerance, practice rooms, digit-span settings and slider wording. It needs one room
-set per condition. Changing `objects_per_room` also needs the rooms re-rendered (see Art).
-Raw positions are saved, so tolerance can be changed during analysis without rerunning
-anyone.
+Edit `config.toml`: conditions, rooms, study time, delay, the 10 s hold, grid size, practice
+delay, digit-span settings and slider wording. Object sizes, surfaces and turns are in
+`art/dataset_photos.csv`; rebuild the assets after changing it.
 
 ## Counterbalancing
 
-The participant number sets everything, so the same number always gets the same order.
-Condition order uses a Williams balanced Latin square: with 3 conditions that is 6 orders,
-so 120 participants gives exactly 20 per order. Room sets (arrangements) rotate separately,
-so over 18 participants every order meets every rotation; 120 is not a multiple of 18, so
-those cells differ by one person (126 would make them equal). The order of the three rooms
-inside a block is shuffled per participant. Each row saves the order that participant received.
+The participant number sets everything. Condition order uses a Williams balanced Latin
+square: 6 orders for 3 conditions, so 120 participants gives 20 per order. Room order
+within a block comes from a second balanced square, shifted in each block. The deal of
+photos and decoys is random but seeded by the participant number, and saved.
 
 ## Development (Linux)
 
-PsychoPy needs Python 3.10 to 3.12. On Python 3.11:
-
 ```
-python3.11 -m venv .venv-psychopy
-.venv-psychopy/bin/pip install --no-deps psychopy==2026.2.5
-.venv-psychopy/bin/pip install arabic-reshaper freetype-py i18next json-tricks numpy packaging pandas pillow pyglet==1.5.27 pyserial python-bidi pyyaml requests scipy six pytest==8.4.2
-.venv-psychopy/bin/python -m pytest -q
-.venv-psychopy/bin/python run_task.py --windowed
+python3 -m venv .venv
+.venv/bin/pip install -r requirements-exe.txt numpy scipy
+.venv/bin/python -m pytest -q          # synthetic assets; runs without the dataset photos
+.venv/bin/python run_task.py --pygame --windowed
 ```
 
-`--pygame` runs the pygame display instead (`.venv` with `requirements-exe.txt`). The tests
-and `--self-test` need only `pytest` and `pillow`. GitHub Actions runs them on Windows, builds
-`MemoryTask.exe` with PyInstaller, runs the self-test inside it, and uploads both builds. GitHub's machines
-have no graphics card, so the PsychoPy window itself is only checked on the lab PC.
+PsychoPy needs Python 3.10 to 3.12; see `requirements.txt`. GitHub Actions runs the tests on
+Windows and builds both packages.
 
 ## Art
 
-Everything is made from CC0 assets from [Poly Haven](https://polyhaven.com), see
-`art/CREDITS.md`. To rebuild, install Blender 5.2 and Python with Pillow, then run
-`art/render_all.sh` and `python art/postprocess.py`. `postprocess.py` fails if a scored
-object is more than 10% hidden, touches the image edge, is within twice the tolerance of
-another scored object, or stands within twice the tolerance of where it stood in another
-arrangement. The previous pygame version is tagged `pygame-v1`.
+All 3D models, textures and the HDRI are CC0 from [Poly Haven](https://polyhaven.com), see
+`art/CREDITS.md`. To rebuild everything (Blender 5.2, Python with Pillow, numpy and scipy):
 
-How the rooms avoid giving locations away (`docs/research/06_round3_rooms.md`):
+1. Put the dataset photos in `art/dataset_photos/`.
+2. `cd art && python fetch_assets.py` (downloads models and textures).
+3. `art/render_all.sh`: cuts out the photos, shoots the made objects, renders the four
+   basements, then `art/assemble_assets.py` builds `assets/` and fails if any target spot
+   overlaps another spot or the filler.
 
-- **No shadows or gaps.** The empty room is a fresh render without the objects, so no shadow stays behind. Every room has a pool of 18 free spots with clutter around them; each arrangement uses 6, so 12 free patches are visible in every full room and an empty patch in the empty room is no clue.
-- **No obvious spots.** The scored objects are portable things with no single home in the room (no pan on a stove, no cup by a plate), and each sits on a different kind of surface in each arrangement.
-- **Busier rooms.** More furniture and clutter than round 2, with clutter next to each spot.
-
-## Known limits of the test build
-
-- Not yet run on Windows or on a real monitor and mouse with PsychoPy: see the lab checklist.
-- Unscored furniture and clutter stay in the empty room, by design.
-- Placed objects are drawn at one size and angle, so they do not sit in the room's perspective.
-- Object expectancy (how guessable each spot is) has not been normed yet: run the baseline group.
-- The extra measure planned after the pilot is not built yet.
+`art/choose_models.py` chose the decoy, practice and filler pools (`art/made_objects.csv`,
+editable). `art/build_basements.py` holds the rooms and their spots.
 
 ## How to cite
 
@@ -189,6 +156,13 @@ research, please cite it in your Methods section and keep the copyright notice i
 `LICENSE` (MIT). GitHub's **Cite this repository** button (from `CITATION.cff`) gives
 APA and BibTeX. In APA:
 
-> Caraway, H. (2026). *Room Recall Task: An object-location memory task for colored-noise research* [Computer software]. https://github.com/Hunter-Caraway/room-recall-task
+> Caraway, H. (2026). *Room Recall Task: An object recognition memory task for colored-noise research* [Computer software]. https://github.com/Hunter-Caraway/room-recall-task
 
-The rendered art uses CC0 models and textures from Poly Haven (`art/CREDITS.md`).
+Also cite the Bank of Standardized Stimuli, which the target photos come from:
+
+> Brodeur, M. B., Dionne-Dostie, E., Montreuil, T., & Lepage, M. (2010). The Bank of Standardized Stimuli (BOSS), a new set of 480 normative photos of objects to be used as visual stimuli in cognitive research. *PLoS ONE, 5*(5), e10773. https://doi.org/10.1371/journal.pone.0010773
+>
+> Brodeur, M. B., Guérard, K., & Bouras, M. (2014). Bank of Standardized Stimuli (BOSS) phase II: 930 new normative photos. *PLoS ONE, 9*(9), e106953. https://doi.org/10.1371/journal.pone.0106953
+
+The BOSS photos and their cut-outs are CC BY-SA 3.0, not MIT. The rendered art uses CC0
+models and textures from Poly Haven (`art/CREDITS.md`).

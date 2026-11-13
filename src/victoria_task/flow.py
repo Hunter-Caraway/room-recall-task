@@ -1,8 +1,8 @@
 """The order of screens in a session, independent of any graphics library.
 
-A Display draws screens and collects input. The PsychoPy display runs the real
-task; the self-test uses a scripted display with no window. Both run this same
-flow, so the self-test checks the real sequence of screens and saves.
+A Display draws screens and collects input. PsychoPy and pygame displays run the
+real task; the self-test uses a scripted display with no window. All of them run
+this same flow, so the self-test checks the real sequence of screens and saves.
 """
 from __future__ import annotations
 
@@ -10,13 +10,18 @@ from pathlib import Path
 from typing import Protocol
 
 from .checks import SLIDER_INSTRUCTIONS, SPAN_INSTRUCTIONS, DigitSpan, SliderAnswer, SliderController, check_rows
+from .composite import compose, tile
 from .config import Config
+from .deal import Trial
 from .filler import FillerResult, Problem, problems
-from .layout import ICON_PX, Icon, PlacementController, load_icon
+from .grid import TILE, GridController
 from .schedule import Block
-from .session import PlacementRound, RoomInfo, RoomTiming, Session, load_room, tray_order
+from .session import Session, TrialTiming
+from .stimuli import Room, load_items, load_room
 
 END_TEXT = "That's the end of the task. Thank you!"
+WAIT_TEXT = "Please wait for the experimenter"
+REMEMBER = "Remember which objects are in the room."
 
 # A line of text and its style: "title", "body", "muted" or "entry".
 Lines = list[tuple[str, str]]
@@ -28,20 +33,20 @@ class QuitSession(Exception):
 
 class Display(Protocol):
     def now_ms(self) -> int: ...
-    def message(self, lines: Lines, key: str) -> None:
-        """Show lines until `key` ("space" or "f8") is pressed."""
+    def message(self, lines: Lines, key: str, hold_ms: int = 0) -> None:
+        """Show lines until `key` ("space" or "f8") is pressed; the key does nothing
+        until the screen has been up for hold_ms."""
     def enter_participant(self) -> int: ...
     def ask_resume(self, number: int) -> bool:
         """F8 resumes the unfinished session; Esc returns False to type another number."""
-    def prepare(self, room: RoomInfo, icons: dict[str, Icon]) -> None:
-        """Load a room's pictures before it is needed."""
-    def study(self, room: RoomInfo, seconds: float, cut_to_empty: bool) -> tuple[int, float, int | None]:
-        """Show the full room for `seconds`. Returns (measured ms, length in ms of the
-        frame the cut landed on, dropped frames or None if unmeasured)."""
+    def prepare(self, key: str, room, tiles: list) -> None:
+        """Load one trial's pictures (PIL images): the furnished room and the grid tiles."""
+    def study(self, key: str, seconds: float) -> tuple[int, float, int | None]:
+        """Show the room for `seconds`, then a blank screen. Returns (measured ms, length
+        in ms of the frame the cut landed on, dropped frames or None if unmeasured)."""
     def filler(self, items: list[Problem], seconds: float) -> FillerResult: ...
-    def placement(self, room: RoomInfo, controller: PlacementController) -> None:
-        """Run drag-and-drop until the controller records Done."""
-    def transition(self, seconds: float) -> None: ...
+    def grid(self, key: str, controller: GridController) -> None:
+        """Run the recognition grid until the controller records Done."""
     def digit_span(self, digits: list[int], digit_ms: int, gap_ms: int) -> tuple[str, int]:
         """Show the digits one at a time, then collect the typed answer. Returns
         (typed digits, ms from the answer screen appearing to Enter)."""
@@ -58,30 +63,36 @@ class Experiment:
         self.display = display
         self.baseline = baseline
         self.build = build
-        self.rooms: dict[str, RoomInfo] = {}
-        self.icons: dict[str, dict[str, Icon]] = {}
+        self.items = load_items(self.assets)
+        self.rooms: dict[str, Room] = {name: load_room(self.assets, name) for name in self.room_names()}
+        self._room_pictures: dict[str, object] = {}
 
-    # ------------------------------------------------------------ loading
-    def room(self, name: str) -> RoomInfo:
-        if name not in self.rooms:
-            info = load_room(self.assets, name)
-            base = self.assets / "rooms" / name
-            self.rooms[name] = info
-            self.icons[name] = {o.id: load_icon(base / o.icon) for o in info.objects}
-            self.display.prepare(info, self.icons[name])
-        return self.rooms[name]
+    def room_names(self) -> list[str]:
+        return list(dict.fromkeys([self.config.practice_room, *self.config.rooms]))
 
-    def all_room_names(self) -> list[str]:
-        names = list(dict.fromkeys(self.config.practice_rooms))
-        for room_set in self.config.room_sets:
-            names += [n for n in room_set if n not in names]
-        return names
+    # ------------------------------------------------------------ pictures
+    def room_picture(self, name: str):
+        from PIL import Image
+
+        if name not in self._room_pictures:
+            with Image.open(self.rooms[name].image) as image:
+                self._room_pictures[name] = image.convert("RGB")
+        return self._room_pictures[name]
+
+    def prepare(self, trial: Trial) -> None:
+        room = self.rooms[trial.room]
+        spots = {s.id: s for s in room.spots}
+        placed = [(self.items[name], spots[spot]) for name, spot in trial.targets]
+        picture = compose(self.room_picture(trial.room), placed)
+        tiles = [tile(self.items[name], TILE) for name in trial.grid]
+        self.display.prepare(trial.key, picture, tiles)
 
     # ------------------------------------------------------------ screens
     def choose_session(self) -> Session:
         while True:
             number = self.display.enter_participant()
-            session = Session(self.config, self.data_dir, number, self.build, baseline=self.baseline)
+            session = Session(self.config, self.data_dir, number, self.items, self.rooms, self.build,
+                              baseline=self.baseline)
             if session.store.has_session():
                 if session.is_complete():
                     self.display.message([
@@ -96,58 +107,50 @@ class Experiment:
 
     def instructions(self, practice: bool, guessing: bool, retention: float) -> None:
         heading = "Practice room" if practice else "Next room"
-        remember = ("Remember where objects belong.", "body")
         if guessing:
             lines = [
-                (heading, "title"),
-                ("You will see a room and some objects in a tray.", "body"),
-                ("Drag each object to where you think it belongs in the room.", "body"),
-                ("When every object is placed, press Done.", "body"),
+                ("Next set", "title"),
+                ("You will see a set of objects. Some of them were in a room you have not seen.", "body"),
+                ("Click every object you think was in that room, then press Done.", "body"),
             ]
         else:
-            lines = [
-                (heading, "title"),
-                remember,
-                (f"You will see a room for {int(self.config.study_seconds)} seconds.", "body"),
-            ]
+            lines = [(heading, "title"), (REMEMBER, "body"),
+                     (f"You will see a room for {int(self.config.study_seconds)} seconds.", "body")]
             if retention > 0:
                 lines.append(("Then you will check some quick sums: press Y if a sum is right, "
                               "N if it is wrong.", "body"))
-            lines += [
-                ("Then some objects will be gone from the room.", "body"),
-                ("Drag each object from the tray back to where it was.", "body"),
-                ("When every object is placed, press Done.", "body"),
-            ]
+            lines += [("Then you will see a set of objects.", "body"),
+                      ("Click every object that was in the room, then press Done.", "body")]
         self.display.message(lines + [("Press the space bar to begin", "muted")], "space")
 
-    def play_room(self, session: Session, name: str, objects, block_index: int,
-                  practice: bool) -> tuple[PlacementRound, RoomTiming]:
-        info = self.room(name)
-        # Baseline participants practise normally, then guess in the scored rooms.
+    def play(self, session: Session, trial: Trial, practice: bool) -> tuple[GridController, TrialTiming]:
+        # Baseline participants practise normally, then guess in the scored trials.
         guessing = self.baseline and not practice
         retention = self.config.practice_retention_seconds if practice else self.config.retention_seconds
+        self.prepare(trial)
         self.instructions(practice, guessing, retention)
         study_ms, end_frame_ms, dropped = 0, 0.0, None
         filler = FillerResult()
         retention_ms = 0
         if not guessing:
-            study_ms, end_frame_ms, dropped = self.display.study(
-                info, self.config.study_seconds, cut_to_empty=retention <= 0)
+            study_ms, end_frame_ms, dropped = self.display.study(trial.key, self.config.study_seconds)
             if retention > 0:
                 start = self.display.now_ms()
-                filler = self.display.filler(problems(session.participant, block_index, name), retention)
+                filler = self.display.filler(problems(session.participant, trial.block, trial.room), retention)
                 retention_ms = self.display.now_ms() - start
-        order = tray_order(session.participant, block_index, name, list(objects))
-        round_ = PlacementRound(info, list(objects), self.display.now_ms())
-        controller = PlacementController(round_, order, self.icons[name])
-        self.display.placement(info, controller)
-        timing = RoomTiming(
-            finished_ms=controller.finished_ms, study_ms=study_ms, study_end_frame_ms=end_frame_ms,
-            study_dropped_frames=dropped, retention_ms=retention_ms,
-            filler_answered=filler.answered, filler_correct=filler.correct, icon_px=ICON_PX,
-            filler_mean_rt_ms=filler.mean_rt_ms,
-        )
-        return round_, timing
+        controller = GridController(list(trial.grid), self.config.grid_columns, self.config.grid_rows,
+                                    self.display.now_ms())
+        self.display.grid(trial.key, controller)
+        timing = TrialTiming(study_ms=study_ms, study_end_frame_ms=end_frame_ms, study_dropped_frames=dropped,
+                             retention_ms=retention_ms, filler_answered=filler.answered,
+                             filler_correct=filler.correct, filler_mean_rt_ms=filler.mean_rt_ms)
+        return controller, timing
+
+    def wait_for_experimenter(self) -> None:
+        """Before each block: the experimenter sets the noise. F8 works only after the
+        hold, so the participant has settled into the noise before the first room."""
+        hold = 0 if self.baseline else int(self.config.block_hold_seconds * 1000)
+        self.display.message([(WAIT_TEXT, "title")], "f8", hold_ms=hold)
 
     def checks(self, session: Session, block: Block) -> None:
         """Backward digit span, then the sliders. Saved as one block of rows."""
@@ -171,23 +174,17 @@ class Experiment:
 
     def run(self) -> None:
         session = self.choose_session()
-        # No experimenter pause between rooms or blocks. The experimenter changes the
-        # noise while the practice-room instructions for the next block are on screen.
+        if session.needs_practice():
+            self.play(session, session.practice, practice=True)  # practice is never saved
+            session.mark_practice_done()
         for block in session.blocks:
-            if session.needs_practice(block):
-                practice = self.room(self.config.practice_room(block.index))
-                self.play_room(session, practice.name, practice.objects[: self.config.practice_objects],
-                               0, practice=True)
-                session.mark_practice_done(block)  # practice results are never written to the data
-                self.display.transition(self.config.transition_seconds)
-            left = session.rooms_left(block)
-            for position, (name, order) in enumerate(left):
-                info = self.room(name)
-                round_, timing = self.play_room(session, name, info.objects, block.index, practice=False)
-                session.finish_room(block, order, round_, timing)
-                last_of_session = block is session.blocks[-1] and position == len(left) - 1
-                if position < len(left) - 1 or not (session.needs_checks(block) or last_of_session):
-                    self.display.transition(self.config.transition_seconds)
+            left = session.trials_left(block)
+            if not left and not session.needs_checks(block):
+                continue
+            self.wait_for_experimenter()
+            for trial in left:
+                controller, timing = self.play(session, trial, practice=False)
+                session.finish_trial(trial, controller, timing)
             if session.needs_checks(block):
                 self.checks(session, block)
         self.display.message([

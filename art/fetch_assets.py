@@ -9,7 +9,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from assets_manifest import ALL_MODELS, HDRIS, TEXTURES
 
 OUT = pathlib.Path(__file__).parent / "_downloads"
-UA = {"User-Agent": "victoria-project-asset-fetcher"}
+UA = {"User-Agent": "asset-fetcher"}
 
 
 def get(url):

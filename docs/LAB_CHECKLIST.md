@@ -4,6 +4,11 @@ About 20 minutes the first time. Use the same computer, screen and mouse as the 
 
 ## Install (once)
 
+**Using the zip download (simplest):** download the ZIP from GitHub, right-click it,
+choose **Extract All**, and open the folder. Double-click `Self Test.bat`. The first
+time, it sets up Python (internet needed, about a minute); it should end with
+`SELF TEST PASSED`. Then go to "Try a session".
+
 **Using the .exe build:** unzip `MemoryTask-Windows-exe` and skip to "Try a session",
 double-clicking `MemoryTask.exe` instead of `Run Task.bat`. If Windows SmartScreen appears,
 choose **More info**, then **Run anyway**, or ask IT to allow it.
@@ -22,20 +27,21 @@ choose **More info**, then **Run anyway**, or ask IT to allow it.
 3. Do the practice room, then one full scored room, including the sums.
 4. Quit with **Ctrl+Shift+Q** during the second scored room.
 5. Start `Run Task.bat` again, type `999`, press **F8** to resume, and finish (about 30 minutes).
-6. Open `data\P999_results.csv` and confirm it has 54 rows (9 rooms x 6 objects), and that `study_dropped_frames` is 0 or close to it.
+6. Open `data\P999_trials.csv` and confirm it has 9 rows, with `targets` adding up to 42 and `study_dropped_frames` 0 or close to it. Open `data\P999_tiles.csv` and confirm it has 216 rows (9 rooms x 24 tiles).
 7. Open `data\P999_checks.csv` and confirm it has digit-span and slider rows for blocks 1, 2 and 3.
 8. Delete every `P999_` file from `data`.
 
 ## Check while it runs
 
 - [ ] The picture fills the screen without stretching (black bars at the sides are fine).
-- [ ] Objects pick up and drop exactly under the pointer.
-- [ ] A very quick click on Done still works.
+- [ ] The objects in the room look like they belong there: right size, on a surface, nothing floating or cut off.
+- [ ] Clicking a grid tile puts a yellow border on it; clicking again removes it.
+- [ ] Done works with no tiles selected, and a very quick click on Done still works.
+- [ ] The grid pictures are sharp and every tile is the same size.
 - [ ] Y and N answer the sums.
-- [ ] No "wait for the experimenter" screen appears between rooms or blocks.
+- [ ] "Please wait for the experimenter" appears before each block, and F8 does nothing for the first 10 seconds.
 - [ ] Digit-span digits are easy to read; typing, Backspace and Enter work.
 - [ ] The sliders show no marker until clicked, and the marker follows a drag.
-- [ ] The cut from the full room is instant and the 3-second walk plays smoothly.
 - [ ] No screen ever shows a condition letter or noise name.
 
 Send back: anything that failed, the Windows version, the screen resolution, and

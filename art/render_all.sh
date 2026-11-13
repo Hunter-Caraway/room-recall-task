@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
-# Rebuild all renders. Resumes where it stopped: delete art/_downloads/raw to start over.
-# Each room type has three arrangements (one per condition); they share one set of icons.
+# Rebuild every picture the task uses. Resumes where it stopped: finished renders are kept.
+#   1. cut the dataset photos out of their white background
+#   2. studio shots of the made objects (decoys, practice, filler)
+#   3. the four basements (empty room + spots)
+#   4. assemble assets/ and check the spots
 set -euo pipefail
 cd "$(dirname "$0")/.."
 BLENDER="${BLENDER:-$HOME/.local/opt/blender-5.2.3-linux-x64/blender}"
-for room in bedroom living_room garage hallway; do
-  for arrangement in 1 2 3; do
-    "$BLENDER" -b --python art/build_rooms.py -- --scene "$room" --arrangement "$arrangement" --mode final --samples 128
-  done
-  "$BLENDER" -b --python art/build_rooms.py -- --scene "$room" --arrangement 1 --mode icons --samples 64
+PY="${PY:-.venv/bin/python}"
+"$PY" art/cutout_photos.py art/dataset_photos art/dataset_cutouts
+"$BLENDER" -b --python art/render_objects.py
+for room in storage laundry workshop practice; do
+  "$BLENDER" -b --python art/build_basements.py -- --room "$room" --mode final --samples 128
 done
-if [ ! -d art/_downloads/raw/transition ]; then
-  "$BLENDER" -b --python art/build_rooms.py -- --scene corridor --mode transition --samples 48
-fi
+"$PY" art/assemble_assets.py
 echo RENDER_DONE

@@ -23,6 +23,17 @@ jobs:
       # graphics card, so the window itself is checked on the lab PC.
       - name: Self-test
         run: python run_task.py --self-test
+      # The way most labs will run it: download the zip, double-click Run Task.bat.
+      # This runs that same file, which sets up its own Python in runtime\ first.
+      - name: Run Task.bat from a fresh download (self-test, smoke test)
+        shell: cmd
+        env:
+          SDL_VIDEODRIVER: dummy
+        run: |
+          call "Run Task.bat" --self-test < NUL || (type selftest.log & exit /b 1)
+          type selftest.log
+          call "Run Task.bat" --smoke-test < NUL || exit /b 1
+          rmdir /s /q runtime
       - name: Write version
         shell: pwsh
         run: '"$(git rev-parse --short HEAD) $(Get-Date -Format yyyy-MM-dd)" | Out-File -Encoding ascii VERSION'
@@ -66,7 +77,7 @@ jobs:
           Copy-Item -Recurse assets, src $out
           Copy-Item run_task.py, config.toml, README.md, VERSION $out
           Copy-Item docs\LAB_CHECKLIST.md $out
-          Copy-Item windows\*.bat $out
+          Copy-Item windows\*.bat $out -Exclude launch.bat
           Get-ChildItem -Recurse -Include __pycache__ $out | Remove-Item -Recurse -Force
       - uses: actions/upload-artifact@v4
         with:

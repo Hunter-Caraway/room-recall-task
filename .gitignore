@@ -10,3 +10,6 @@ dist/
 *.spec
 .venv-psychopy/
 selftest.log
+art/dataset_photos/
+art/dataset_cutouts/
+runtime/
