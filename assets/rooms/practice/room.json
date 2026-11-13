@@ -1,153 +1,93 @@
 {
  "width": 1600,
  "height": 900,
- "image": "base.jpg",
+ "image": "base.png",
  "spots": [
   {
    "id": "shelf_0",
    "surface": "shelf",
-   "x": 485.4,
-   "y": 435.9,
-   "px_per_m": 262.19,
-   "max_w_m": 0.45,
-   "max_h_m": 0.36,
-   "squash": 0.408,
-   "light": [
-    0.961,
-    0.945,
-    0.931
-   ]
+   "x": 400,
+   "y": 296,
+   "px_per_m": 270,
+   "max_w_m": 0.5,
+   "max_h_m": 0.5
   },
   {
    "id": "shelf_1",
    "surface": "shelf",
-   "x": 470.1,
-   "y": 308.9,
-   "px_per_m": 274.9,
-   "max_w_m": 0.45,
-   "max_h_m": 0.36,
-   "squash": 0.312,
-   "light": [
-    1.009,
-    0.998,
-    0.989
-   ]
-  },
-  {
-   "id": "shelf_2",
-   "surface": "shelf",
-   "x": 453.3,
-   "y": 168.7,
-   "px_per_m": 288.92,
-   "max_w_m": 0.45,
-   "max_h_m": 0.36,
-   "squash": 0.205,
-   "light": [
-    1.03,
-    1.02,
-    1.013
-   ]
-  },
-  {
-   "id": "crate_top",
-   "surface": "table",
-   "x": 1176.3,
-   "y": 389.4,
-   "px_per_m": 268.77,
+   "x": 580,
+   "y": 296,
+   "px_per_m": 270,
    "max_w_m": 0.5,
-   "max_h_m": 0.5,
-   "squash": 0.373,
-   "light": [
-    1.005,
-    1.0,
-    0.992
-   ]
+   "max_h_m": 0.5
   },
   {
-   "id": "bench_0",
-   "surface": "table",
-   "x": 424.6,
-   "y": 737.8,
-   "px_per_m": 625.61,
+   "id": "wall_a",
+   "surface": "wall",
+   "x": 800,
+   "y": 150,
+   "px_per_m": 270,
    "max_w_m": 0.6,
-   "max_h_m": 0.55,
-   "squash": 0.639,
-   "light": [
-    0.996,
-    0.98,
-    0.963
-   ]
+   "max_h_m": 1.0
   },
   {
-   "id": "bench_1",
-   "surface": "table",
-   "x": 717.1,
-   "y": 825.8,
-   "px_per_m": 691.07,
-   "max_w_m": 0.6,
-   "max_h_m": 0.55,
-   "squash": 0.707,
-   "light": [
-    0.993,
-    0.979,
-    0.965
-   ]
+   "id": "floor_l",
+   "surface": "floor",
+   "x": 520,
+   "y": 660,
+   "px_per_m": 302.5,
+   "max_w_m": 0.75,
+   "max_h_m": 1.05
   },
   {
-   "id": "bench_2",
-   "surface": "table",
-   "x": 1004.5,
-   "y": 730.0,
-   "px_per_m": 619.74,
-   "max_w_m": 0.6,
-   "max_h_m": 0.55,
-   "squash": 0.633,
-   "light": [
-    0.997,
-    0.982,
-    0.966
-   ]
+   "id": "floor_r",
+   "surface": "floor",
+   "x": 1100,
+   "y": 660,
+   "px_per_m": 302.5,
+   "max_w_m": 0.75,
+   "max_h_m": 1.05
   },
   {
-   "id": "bench_3",
+   "id": "table_0",
    "surface": "table",
-   "x": 1302.8,
-   "y": 835.6,
-   "px_per_m": 698.37,
-   "max_w_m": 0.6,
-   "max_h_m": 0.55,
-   "squash": 0.715,
-   "light": [
-    0.997,
-    0.983,
-    0.969
-   ]
+   "x": 320,
+   "y": 782,
+   "px_per_m": 550,
+   "max_w_m": 0.5,
+   "max_h_m": 0.5
+  },
+  {
+   "id": "table_1",
+   "surface": "table",
+   "x": 700,
+   "y": 782,
+   "px_per_m": 550,
+   "max_w_m": 0.5,
+   "max_h_m": 0.5
+  },
+  {
+   "id": "table_2",
+   "surface": "table",
+   "x": 1080,
+   "y": 782,
+   "px_per_m": 550,
+   "max_w_m": 0.5,
+   "max_h_m": 0.5
   }
  ],
  "blocked": [
   [
-   779,
-   547,
-   941,
-   707
+   1322.9,
+   591.0,
+   1517.1,
+   712.0
   ],
   [
-   847,
-   382,
-   980,
-   520
-  ],
-  [
-   647,
-   427,
-   759,
-   612
-  ],
-  [
-   1580,
-   596,
-   1769,
-   911
+   78.6,
+   581.2,
+   321.4,
+   712.0
   ]
  ]
 }

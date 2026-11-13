@@ -1,4 +1,4 @@
-name: Build for the Windows lab PC
+name: Check the Windows download
 
 on:
   push:
@@ -6,25 +6,22 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  check:
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      # PsychoPy Standalone on the lab PC uses Python 3.11, so test with the same.
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - name: Install dependencies
-        run: pip install -r requirements-exe.txt pyinstaller==6.16.0
+        run: pip install -r requirements-exe.txt
       - name: Test the logic
         run: python -m pytest -q
-      # Scripted sessions with no window. GitHub's Windows machines have no
-      # graphics card, so the window itself is checked on the lab PC.
-      - name: Self-test
-        run: python run_task.py --self-test
-      # The way most labs will run it: download the zip, double-click Run Task.bat.
+      # The way the lab runs it: download the zip, double-click Run Task.bat.
       # This runs that same file, which sets up its own Python in runtime\ first.
+      # GitHub's Windows machines have no graphics card, so the window itself is
+      # checked on the lab PC.
       - name: Run Task.bat from a fresh download (self-test, smoke test)
         shell: cmd
         env:
@@ -33,54 +30,3 @@ jobs:
           call "Run Task.bat" --self-test < NUL || (type selftest.log & exit /b 1)
           type selftest.log
           call "Run Task.bat" --smoke-test < NUL || exit /b 1
-          rmdir /s /q runtime
-      - name: Write version
-        shell: pwsh
-        run: '"$(git rev-parse --short HEAD) $(Get-Date -Format yyyy-MM-dd)" | Out-File -Encoding ascii VERSION'
-
-      # ---- single .exe (pygame display) ----
-      - name: Build MemoryTask.exe
-        run: >
-          pyinstaller --noconfirm --onefile --noconsole --name MemoryTask
-          --exclude-module psychopy
-          --add-data "assets;assets" --add-data "config.toml;." --add-data "VERSION;."
-          --paths src run_task.py
-      - name: Self-test and smoke test inside the .exe
-        shell: pwsh
-        env:
-          SDL_VIDEODRIVER: dummy
-        run: |
-          $p = Start-Process -FilePath dist\MemoryTask.exe -ArgumentList "--self-test" -Wait -PassThru
-          Get-Content dist\selftest.log
-          if ($p.ExitCode -ne 0) { exit 1 }
-          $p = Start-Process -FilePath dist\MemoryTask.exe -ArgumentList "--smoke-test" -Wait -PassThru
-          if ($p.ExitCode -ne 0) { exit 1 }
-      - name: Package the .exe folder
-        shell: pwsh
-        run: |
-          Remove-Item dist\selftest.log
-          if (Test-Path dist\data) { Remove-Item -Recurse dist\data }
-          Copy-Item config.toml, README.md dist\
-          Copy-Item docs\LAB_CHECKLIST.md dist\
-      - uses: actions/upload-artifact@v4
-        with:
-          name: MemoryTask-Windows-exe
-          path: dist/
-          retention-days: 30
-
-      # ---- PsychoPy folder ----
-      - name: Package the PsychoPy folder
-        shell: pwsh
-        run: |
-          $out = "MemoryTask-PsychoPy"
-          New-Item -ItemType Directory $out | Out-Null
-          Copy-Item -Recurse assets, src $out
-          Copy-Item run_task.py, config.toml, README.md, VERSION $out
-          Copy-Item docs\LAB_CHECKLIST.md $out
-          Copy-Item windows\*.bat $out -Exclude launch.bat
-          Get-ChildItem -Recurse -Include __pycache__ $out | Remove-Item -Recurse -Force
-      - uses: actions/upload-artifact@v4
-        with:
-          name: MemoryTask-Windows-PsychoPy
-          path: MemoryTask-PsychoPy/
-          retention-days: 30

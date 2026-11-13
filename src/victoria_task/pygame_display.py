@@ -16,7 +16,7 @@ import pygame
 from .checks import CONTINUE_RECT, SLIDER_LEFT, SLIDER_RIGHT, SLIDER_Y, SliderController
 from .filler import FillerResult, Problem
 from .flow import QuitSession
-from .grid import CANVAS, DONE_RECT, PROMPT, PROMPT_Y, ROOM_ORIGIN, GridController
+from .grid import CANVAS, DONE_RECT, PROMPT, PROMPT_Y, ROOM_ORIGIN, GridController, group_line
 
 BG = (18, 18, 20)
 TEXT = (232, 232, 228)
@@ -30,7 +30,7 @@ DONE = pygame.Rect(DONE_RECT)
 FPS = 60
 KEYS = {pygame.K_SPACE: "space", pygame.K_F8: "f8", pygame.K_ESCAPE: "escape",
         pygame.K_BACKSPACE: "backspace", pygame.K_RETURN: "return", pygame.K_KP_ENTER: "return",
-        pygame.K_y: "y", pygame.K_n: "n"}
+        pygame.K_y: "y", pygame.K_n: "n", pygame.K_b: "b"}
 
 
 class PygameDisplay:
@@ -103,12 +103,12 @@ class PygameDisplay:
                 return
             self.clock.tick(FPS)
 
-    def enter_participant(self) -> int:
+    def enter_participant(self, baseline: bool = False) -> tuple[int, bool]:
         text, note = "", ""
         while True:
             self._draw_lines([
                 ("Experimenter: type the participant number, then press Enter", "title"),
-                (text or "_", "entry"), (note, "muted"),
+                (text or "_", "entry"), (note, "muted"), (group_line(baseline), "muted"),
             ])
             pygame.display.flip()
             for kind, value, _ in self.events():
@@ -116,9 +116,11 @@ class PygameDisplay:
                     text += value
                 elif kind == "key" and value == "backspace":
                     text = text[:-1]
+                elif kind == "key" and value == "b":
+                    baseline = not baseline
                 elif kind == "key" and value == "return":
                     if text and 1 <= int(text) <= 9999:
-                        return int(text)
+                        return int(text), baseline
                     note = "Enter a number from 1 to 9999"
             self.clock.tick(FPS)
 

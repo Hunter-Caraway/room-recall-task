@@ -1,261 +1,146 @@
-name,label,category,width_m,surfaces,rotate_deg,pool
-8ball,8-ball,ball,0.057,table|shelf,0,target
-bolt01a,bolt,hardware,0.08,table|shelf,0,target
-bottleofwhitewine,wine bottle,bottle,0.075,table|shelf,0,target
-bowtie,bow tie,clothing,0.12,table|shelf,0,target
-coffeemaker,coffee maker,kitchen appliance,0.2,table|shelf,0,target
-coloringset,colouring set,art supplies,0.4,table|floor,0,target
-electricguitar01,electric guitar,instrument,0.45,lean|wall,0,target
-electricmixer,stand mixer,kitchen appliance,0.36,table,0,target
-electrictoothbrush01c,electric toothbrush,personal care,0.15,table|shelf,51,target
-flipflop01b,flip-flop,footwear,0.27,floor|shelf,0,target
-football,american football,ball,0.28,floor|shelf|table,0,target
-gamecontroller01,game controller,electronics,0.2,table|shelf,0,target
-garbagecan02,pedal bin,container,0.3,floor,0,target
-handheldtelescope,telescope,optics,0.43,table|shelf,-32,target
-hose,garden hose,garden,0.45,floor|wall,0,target
-ipod,music player,electronics,0.11,table|shelf,0,target
-jarofapplesauce,jar of applesauce,food,0.12,table|shelf,0,target
-jeans01,jeans,clothing,0.6,wall,0,target
-key07,keys,hardware,0.09,table|shelf|wall,0,target
-knife03,kitchen knife,kitchen tool,0.3,table,0,target
-laundrybasket01a,laundry basket,container,0.6,floor,0,target
-lintroller,lint roller,personal care,0.25,table|shelf,0,target
-mug05,mug,cup,0.12,table|shelf,0,target
-musicsheet,sheet music,paper,0.32,table|wall,0,target
-painting,painting,decor,0.4,wall|lean,0,target
-record,vinyl record,music,0.3,wall|lean|shelf,0,target
-rubikcube,puzzle cube,toy,0.07,table|shelf,0,target
-saltshaker03a,salt shaker,kitchen tool,0.05,table|shelf,0,target
-snowglobe,snow globe,decor,0.1,table|shelf,0,target
-soccerball,soccer ball,ball,0.22,floor|shelf,0,target
-soccercleat01,football boot,footwear,0.29,floor|shelf,0,target
-stubbywrench01a,spanner,hand tool,0.2,table|shelf|wall,0,target
-tabascosauce,hot sauce,bottle,0.035,table|shelf,0,target
-tennisracket,tennis racket,sports,0.68,floor|table|wall,0,target
-tie02,necktie,clothing,0.12,wall,0,target
-travelmug,travel mug,cup,0.12,table|shelf,0,target
-triangleruler01,set square,stationery,0.3,table|wall,0,target
-vacuumcleaner01,stick vacuum,appliance,0.27,lean,0,target
-visor,sun visor,clothing,0.26,table|shelf|wall,0,target
-volleyball,volleyball,ball,0.21,floor|shelf,0,target
-washingmachine,washing machine,appliance,0.6,floor,0,target
-watercolorpaintset,watercolour set,art supplies,0.25,table|shelf,0,target
-brass_blowtorch,brass blowtorch,torches & burners,0.148,table|shelf,0,practice_target
-brass_vase_03,brass vase 03,metal vases,0.083,-,0,practice_decoy
-ceramic_pot,ceramic pot,pots & pans,0.586,-,0,practice_decoy
-ceramic_vase_02,ceramic vase 02,ceramic vases,0.219,table|shelf,0,practice_target
-ceramic_vase_04,ceramic vase 04,ceramic vases,0.181,-,0,practice_decoy
-chinese_stool,chinese stool,stools & bar seating,0.729,-,0,practice_decoy
-coffee_table_round_01,coffee table round 01,coffee tables,1.160,-,0,practice_decoy
-drill_press_01,drill press 01,workshop machines,0.556,-,0,practice_decoy
-fish_knife,fish knife,daggers & knives,0.285,-,0,practice_decoy
-gamepad,gamepad,handheld devices,0.434,-,0,practice_decoy
-gaming_console,gaming console,entertainment systems,0.424,-,0,practice_decoy
-hand_truck,hand truck,carts & trolleys,0.717,-,0,practice_decoy
-hanging_picture_frame_01,hanging picture frame 01,picture frames & art,0.585,-,0,practice_decoy
-industrial_microscope,industrial microscope,optical instruments,0.297,-,0,practice_decoy
-painted_wooden_chair_02,painted wooden chair 02,chairs,0.832,-,0,practice_decoy
-pocket_watch,pocket watch,watches & timepieces,0.052,-,0,practice_decoy
-portable_welding_cart,portable welding cart,welding equipment,0.895,-,0,practice_decoy
-propane_torch_02,propane torch 02,torches & burners,0.683,-,0,practice_decoy
-rusted_wheel_rim_02,rusted wheel rim 02,rims,0.347,-,0,practice_decoy
-strawberry_chocolate_cake,strawberry chocolate cake,cakes & pastries,0.245,table|shelf,0,practice_target
-vintage_flashlight,vintage flashlight,flashlights & torches,0.203,table|shelf,0,practice_target
-vintage_microwave,vintage microwave,home appliances,1.210,-,0,practice_decoy
-wooden_axe,wooden axe,axes & hatchets,1.193,-,0,practice_decoy
-wooden_cutting_board,wooden cutting board,cutting boards,0.483,-,0,practice_decoy
-ArmChair_01,arm chair 01,chairs,1.012,-,0,decoy
-BarberShopChair_01,barber shop chair 01,chairs,1.111,-,0,decoy
-Barrel_01,barrel_01,metal drums,0.563,-,0,decoy
-Camera_01,camera 01,cameras,0.201,-,0,decoy
-CashRegister_01,cash register 01,retail machines,0.712,-,0,decoy
-CheeseBox_01,cheesebox_01,wooden crates,0.260,-,0,decoy
-ClassicConsole_01,classic console 01,console tables,1.450,-,0,decoy
-ClassicNightstand_01,classic nightstand 01,side & end tables,0.688,-,0,decoy
-CoffeeTable_01,coffee table 01,coffee tables,1.797,-,0,decoy
-Drill_01,drill 01,drills,0.167,-,0,decoy
-GothicCommode_01,gothic commode 01,drawers & dressers,1.328,-,0,decoy
-GreenChair_01,green chair 01,chairs,0.822,-,0,decoy
-Lantern_01,lantern 01,lanterns,0.108,-,0,decoy
-Megaphone_01,megaphone 01,handheld devices,0.384,-,0,decoy
-Ottoman_01,ottoman 01,ottomans & footstools,1.004,-,0,decoy
-Rockingchair_01,rockingchair 01,chairs,0.830,-,0,decoy
-SchoolChair_01,school chair 01,chairs,0.822,-,0,decoy
-SchoolDesk_01,school desk 01,desks,0.877,-,0,decoy
-Sofa_01,sofa 01,sofas & couches,1.589,-,0,decoy
-Television_01,television 01,televisions,0.723,-,0,decoy
-Ukulele_01,ukulele 01,string instruments,0.174,-,0,decoy
-WetFloorSign_01,wet floor sign 01,signs,0.446,-,0,decoy
-WoodenTable_02,wooden table 02,side & end tables,0.301,-,0,decoy
-adjustable_wrench,adjustable wrench,wrenches & spanners,0.065,-,0,decoy
-american_football,american football,balls,0.396,-,0,decoy
-antique_ceramic_vase_01,antique ceramic vase 01,ceramic vases,0.255,-,0,decoy
-bar_chair_round_01,bar chair round 01,stools & bar seating,0.484,-,0,decoy
-barrel_03,barrel 03,metal drums,0.639,-,0,decoy
-barrel_stove,barrel stove,stoves & heaters,0.593,-,0,decoy
-baseball_01,baseball 01,balls,0.075,-,0,decoy
-baseball_bat,baseball bat,bats & rackets,0.647,-,0,decoy
-binoculars,binoculars,optical instruments,0.243,-,0,decoy
-book_encyclopedia_set_01,book encyclopedia set 01,books,0.552,-,0,decoy
-boombox,boombox,radios & portable audio,0.696,-,0,decoy
-brass_diya_lantern,brass diya lantern,oil lamps,0.124,-,0,decoy
-brass_pan_01,brass pan 01,pots & pans,0.288,-,0,decoy
-brass_pot_01,brass pot 01,pots & pans,0.303,-,0,decoy
-brass_pot_02,brass pot 02,pots & pans,0.315,-,0,decoy
-brass_vase_01,brass vase 01,metal vases,0.228,-,0,decoy
-brass_vase_02,brass vase 02,metal vases,0.210,-,0,decoy
-brass_vase_04,brass vase 04,metal vases,0.075,-,0,decoy
-bronze_ray_statue,bronze ray statue,animal figures,0.500,-,0,decoy
-bronze_shark_statue,bronze shark statue,animal figures,0.548,-,0,decoy
-bronze_whale_statue,bronze whale statue,animal figures,1.025,-,0,decoy
-bull_head,bull head,animal figures,0.308,-,0,decoy
-bunsen_burner,bunsen burner,lab equipment,0.120,-,0,decoy
-carrot_cake,carrot cake,cakes & pastries,0.229,-,0,decoy
-carved_wooden_elephant,carved wooden elephant,animal figures,0.084,-,0,decoy
-carved_wooden_plate,carved wooden plate,plates,0.277,-,0,decoy
-cassette_player,cassette player,radios & portable audio,0.127,-,0,decoy
-ceramic_vase_01,ceramic vase 01,ceramic vases,0.204,-,0,decoy
-ceramic_vase_03,ceramic vase 03,ceramic vases,0.149,-,0,decoy
-chemistry_set,chemistry set,lab equipment,1.057,-,0,decoy
-chess_set,chess set,board games,0.758,-,0,decoy
-chinese_armchair,chinese armchair,chairs,1.068,-,0,decoy
-chinese_screen_panels,chinese screen panels,room dividers & screens,1.274,-,0,decoy
-chinese_tea_table,chinese tea table,coffee tables,1.157,-,0,decoy
-cigarette_pack,cigarette pack,smoking accessories,0.062,-,0,decoy
-circuit_board,circuit board,components,0.540,-,0,decoy
-classic_laptop,classic laptop,computers,0.803,-,0,decoy
-clipboard,clipboard,clipboards & boards,0.356,-,0,decoy
-combination_wrench,combination wrench,wrenches & spanners,0.202,-,0,decoy
-concrete_cat_statue,concrete cat statue,animal figures,0.198,-,0,decoy
-croissant,croissant,cakes & pastries,0.172,-,0,decoy
-cross_pein_hammer,cross pein hammer,hammers & mallets,0.095,-,0,decoy
-crowbar_01,crowbar 01,pry bars,0.908,-,0,decoy
-dartboard,dartboard,board games,0.449,-,0,decoy
-digital_wrist_watch,digital wrist watch,watches & timepieces,0.126,-,0,decoy
-dining_chair_02,dining chair 02,chairs,0.649,-,0,decoy
-dirty_football,dirty football,balls,0.222,-,0,decoy
-fancy_picture_frame_01,fancy picture frame 01,picture frames & art,0.595,-,0,decoy
-fancy_picture_frame_02,fancy picture frame 02,picture frames & art,0.652,-,0,decoy
-filmstrip_projector_8mm,filmstrip projector 8mm,projectors,0.427,-,0,decoy
-fishermans_hat,fishermans hat,headwear,0.336,-,0,decoy
-flathead_screwdriver,flathead screwdriver,screwdrivers,0.364,-,0,decoy
-gallinera_chair,gallinera chair,chairs,0.794,-,0,decoy
-gallinera_table,gallinera table,dining tables,0.975,-,0,decoy
-garden_gnome,garden gnome,ornamental sculptures,0.196,-,0,decoy
-garden_sprinkler_01,garden sprinkler 01,watering & irrigation,0.341,-,0,decoy
-gothic_coffee_table,gothic coffee table,coffee tables,1.990,-,0,decoy
-hand_plane_no4,hand plane no4,hand tools,0.307,-,0,decoy
-handsaw_wood,handsaw wood,saws & cutting,0.345,-,0,decoy
-hanging_picture_frame_02,hanging picture frame 02,picture frames & art,0.741,-,0,decoy
-hanging_picture_frame_03,hanging picture frame 03,picture frames & art,0.378,-,0,decoy
-hatchet,hatchet,axes & hatchets,0.062,-,0,decoy
-horse_head,horse head,animal figures,0.296,-,0,decoy
-horse_statue_01,horse statue 01,animal figures,0.151,-,0,decoy
-industrial_coffee_table,industrial coffee table,coffee tables,1.057,-,0,decoy
-industrial_pipe_lamp,industrial pipe lamp,desk lamps,0.196,-,0,decoy
-jug_01,jug 01,jugs & pitchers,0.239,-,0,decoy
-korean_fire_extinguisher_01,korean fire extinguisher 01,hydrants & fire safety,0.433,-,0,decoy
-lemon,lemon,fruit,0.070,-,0,decoy
-life_jacket,life jacket,safety gear,0.596,-,0,decoy
-lifebuoy,lifebuoy,buoys & markers,0.768,-,0,decoy
-lightbulb_01,lightbulb 01,bulbs,0.060,-,0,decoy
-lightbulb_led,lightbulb led,bulbs,0.062,-,0,decoy
-lion_head,lion head,animal figures,0.296,-,0,decoy
-magnifying_glass_01,magnifying glass 01,optical instruments,0.127,-,0,decoy
-marble_bust_01,marble bust 01,busts & human figures,0.281,-,0,decoy
-measuring_tape_01,measuring tape 01,measuring tools,0.104,-,0,decoy
-medical_box,medical box,medical kits,0.586,-,0,decoy
-metal_detector,metal detector,measuring tools,0.543,-,0,decoy
-metal_jug,metal jug,jugs & pitchers,0.197,-,0,decoy
-metal_stool_01,metal stool 01,stools & bar seating,0.323,-,0,decoy
-metal_stool_02,metal stool 02,stools & bar seating,0.461,-,0,decoy
-metal_stool_03,metal stool 03,stools & bar seating,0.609,-,0,decoy
-metal_toolbox,metal toolbox,tool chests,0.467,-,0,decoy
-mid_century_lounge_chair,mid century lounge chair,chairs,1.191,-,0,decoy
-modern_arm_chair_01,modern arm chair 01,chairs,1.138,-,0,decoy
-modern_coffee_table_01,modern coffee table 01,coffee tables,1.068,-,0,decoy
-modern_coffee_table_02,modern coffee table 02,coffee tables,1.654,-,0,decoy
-modified_thermos,modified thermos,flasks & thermoses,0.131,-,0,decoy
-mousetrap,mousetrap,hand tools,0.095,-,0,decoy
-old_drill_press,old drill press,workshop machines,0.701,-,0,decoy
-old_gas_mask,old gas mask,safety gear,0.286,-,0,decoy
-old_military_compressor,old military compressor,pumps,1.262,-,0,decoy
-ornate_mirror_01,ornate mirror 01,mirrors,0.480,-,0,decoy
-painted_wooden_bench,painted wooden bench,benches,1.252,-,0,decoy
-painted_wooden_chair_01,painted wooden chair 01,chairs,0.620,-,0,decoy
-painted_wooden_nightstand,painted wooden nightstand,side & end tables,0.683,-,0,decoy
-painted_wooden_stool,painted wooden stool,stools & bar seating,0.536,-,0,decoy
-pastic_torch_6v,plastic torch 6v,flashlights & torches,0.208,-,0,decoy
-picke_dirty_01,picke dirty 01,digging tools,0.539,-,0,decoy
-pipe_wrench,pipe wrench,wrenches & spanners,0.795,-,0,decoy
-planter_box_01,planter box 01,planter boxes,0.981,-,0,decoy
-planter_box_02,planter box 02,planter boxes,1.297,-,0,decoy
-planter_box_03,planter box 03,planter boxes,1.107,-,0,decoy
-plastic_thermos,plastic thermos,flasks & thermoses,0.130,-,0,decoy
-pliers,pliers,pliers & grippers,0.054,-,0,decoy
-plunger,plunger,brooms & cleaning,0.173,-,0,decoy
-portable_cassette_player,portable cassette player,radios & portable audio,0.159,-,0,decoy
-portable_generator,portable generator,utility equipment,0.972,-,0,decoy
-portable_searchlight,portable searchlight,flashlights & torches,0.251,-,0,decoy
-pot_enamel_01,pot enamel 01,pots & pans,0.250,-,0,decoy
-potted_plant_01,potted plant 01,potted plants,0.550,-,0,decoy
-potted_plant_02,potted plant 02,potted plants,0.769,-,0,decoy
-potted_plant_04,potted plant 04,potted plants,0.178,-,0,decoy
-propane_torch,propane torch,torches & burners,0.637,-,0,decoy
-retro_multimeter,retro multimeter,lab equipment,0.198,-,0,decoy
-round_spectacles,round spectacles,eyewear,0.185,-,0,decoy
-round_wooden_table_01,round wooden table 01,dining tables,1.403,-,0,decoy
-round_wooden_table_02,round wooden table 02,dining tables,0.798,-,0,decoy
-rubber_boots,rubber boots,footwear,0.853,-,0,decoy
-rubber_duck_toy,rubber duck toy,toys,0.233,-,0,decoy
-rusted_hacksaw,rusted hacksaw,saws & cutting,0.490,-,0,decoy
-rusted_spade_01,rusted spade 01,digging tools,1.545,-,0,decoy
-rusted_wheel_rim_01,rusted wheel rim 01,rims,0.420,-,0,decoy
-screwdriver,screwdriver,screwdrivers,0.270,-,0,decoy
-seadogs_compass,seadogs compass,nautical instruments,0.112,-,0,decoy
-side_table_01,side table 01,side & end tables,0.704,-,0,decoy
-side_table_tall_01,side table tall 01,side & end tables,0.335,-,0,decoy
-signal_flashlight,signal flashlight,flashlights & torches,0.073,-,0,decoy
-sledgehammer_01,sledgehammer 01,hammers & mallets,0.219,-,0,decoy
-small_plastic_torch,small plastic torch,flashlights & torches,0.158,-,0,decoy
-spinning_wheel_01,spinning wheel 01,vices & clamps,0.697,-,0,decoy
-standing_chalkboard_01,standing chalkboard 01,clipboards & boards,1.179,-,0,decoy
-standing_picture_frame_01,standing picture frame 01,display pieces,0.165,-,0,decoy
-standing_picture_frame_02,standing picture frame 02,display pieces,0.169,-,0,decoy
-sungka_board,sungka board,board games,0.358,-,0,decoy
-sungka_board_02,sungka board 02,board games,0.915,-,0,decoy
-television_02,television 02,televisions,0.463,-,0,decoy
-tire_pump,tire pump,pumps,0.234,-,0,decoy
-tongue_groove_pliers,tongue & groove pliers,pliers & grippers,0.163,-,0,decoy
-treasure_chest,treasure chest,chests & trunks,1.029,-,0,decoy
-trowel_01,trowel 01,digging tools,0.206,-,0,decoy
-vintage_binocular,vintage binoculars,optical instruments,0.236,-,0,decoy
-vintage_electric_kettle,vintage electric kettle,kettles,0.294,-,0,decoy
-vintage_lighter,vintage lighter,smoking accessories,0.080,-,0,decoy
-vintage_microscope,vintage microscope,lab equipment,0.143,-,0,decoy
-vintage_oil_lamp,vintage oil lamp,oil lamps,0.221,-,0,decoy
-vintage_pocket_watch,vintage pocket watch,watches & timepieces,0.053,-,0,decoy
-vintage_radio_transceiver,vintage radio transceiver,radios & portable audio,0.596,-,0,decoy
-vintage_spacecraft_instrument,vintage spacecraft instrument,devices & instruments,0.427,-,0,decoy
-vintage_stapler,vintage stapler,office tools,0.193,-,0,decoy
-vintage_telephone_wall_clock,vintage telephone wall clock,wall clocks,0.368,-,0,decoy
-vintage_video_camera,vintage video camera,cameras,0.115,-,0,decoy
-wall_clock,wall clock,wall clocks,0.318,-,0,decoy
-watering_can_metal_01,watering can metal 01,watering & irrigation,0.263,-,0,decoy
-wheelchair_01,wheelchair 01,wheelchairs,1.149,-,0,decoy
-wicker_basket_01,wicker basket 01,baskets,0.449,-,0,decoy
-wicker_basket_02,wicker basket 02,baskets,0.323,-,0,decoy
-wine_barrel_01,wine barrel 01,wooden barrels,0.746,-,0,decoy
-wooden_axe_02,wooden axe 02,axes & hatchets,1.246,-,0,decoy
-wooden_axe_03,wooden axe 03,axes & hatchets,0.964,-,0,decoy
-wooden_bowl_01,wooden bowl 01,bowls,0.312,-,0,decoy
-wooden_bowl_02,wooden bowl 02,bowls,0.129,-,0,decoy
-wooden_bucket_02,wooden bucket 02,buckets,0.616,-,0,decoy
-wooden_candlestick,wooden candlestick,candles & candlesticks,0.098,-,0,decoy
-wooden_hammer_01,wooden hammer 01,hammers & mallets,0.106,-,0,decoy
-wooden_lantern_01,wooden lantern 01,lanterns,0.299,-,0,decoy
-wooden_spoon,wooden spoon,wooden utensils,0.161,-,0,decoy
-wooden_stool_01,wooden stool 01,stools & bar seating,0.589,-,0,decoy
-wooden_stool_02,wooden stool 02,stools & bar seating,0.267,-,0,decoy
-yellow_onion,yellow onion,vegetables,0.072,-,0,decoy
+name,label,category,size_m,surfaces,pool
+8ball,8-ball,ball,0.057,table|shelf|floor,target
+bolt01a,bolt,hardware,0.10,table|shelf,target
+bottleofwhitewine,wine bottle,bottle,0.30,table|shelf|floor,target
+bowtie,bow tie,clothing,0.12,table,target
+coffeemaker,coffee maker,kitchen appliance,0.33,table|shelf,target
+coloringset,colouring set,art supplies,0.40,table|floor,target
+electricguitar01,electric guitar,instrument,0.98,lean|wall,target
+electricmixer,stand mixer,kitchen appliance,0.38,table|shelf,target
+electrictoothbrush01c,electric toothbrush,personal care,0.23,table,target
+flipflop01b,flip-flop,footwear,0.26,floor|table,target
+football,american football,ball,0.28,floor|shelf|table,target
+gamecontroller01,game controller,electronics,0.19,table,target
+garbagecan02,pedal bin,container,0.40,floor,target
+handheldtelescope,telescope,optics,0.45,table|shelf,target
+hose,garden hose,garden,0.45,wall,target
+ipod,music player,electronics,0.11,table|shelf,target
+jarofapplesauce,jar of applesauce,food,0.15,table|shelf,target
+jeans01,jeans,clothing,0.95,wall,target
+key07,keys,hardware,0.09,table|wall,target
+knife03,kitchen knife,kitchen tool,0.30,table,target
+laundrybasket01a,laundry basket,container,0.60,floor,target
+lintroller,lint roller,personal care,0.25,table|shelf,target
+mug05,mug,cup,0.12,table|shelf,target
+musicsheet,sheet music,paper,0.30,table,target
+painting,painting,decor,0.45,wall|lean,target
+record,vinyl record,music,0.30,wall|lean,target
+rubikcube,puzzle cube,toy,0.09,table|shelf,target
+saltshaker03a,salt shaker,kitchen tool,0.11,table|shelf,target
+snowglobe,snow globe,decor,0.12,table|shelf,target
+soccerball,soccer ball,ball,0.22,floor|shelf,target
+soccercleat01,football boot,footwear,0.29,floor|shelf,target
+stubbywrench01a,spanner,hand tool,0.20,table|wall,target
+tabascosauce,hot sauce,bottle,0.14,table|shelf,target
+tennisracket,tennis racket,sports,0.68,wall|lean,target
+tie02,necktie,clothing,0.50,wall,target
+travelmug,travel mug,cup,0.20,table|shelf,target
+triangleruler01,set square,stationery,0.30,table,target
+vacuumcleaner01,stick vacuum,appliance,1.10,lean,target
+visor,sun visor,clothing,0.26,table|shelf,target
+volleyball,volleyball,ball,0.21,floor|shelf,target
+washingmachine,washing machine,appliance,0.95,floor,target
+watercolorpaintset,watercolour set,art supplies,0.25,table|shelf,target
+ceramic_vase_04,jug vase,vase,0.30,table|shelf,practice_target
+brass_vase_03,copper vase,vase,0.25,table|shelf,practice_target
+ceramic_pot,clay pot,container,0.35,floor|table,practice_target
+pocket_watch,pocket watch,clock,0.10,table,practice_target
+basketball,basketball,ball,0.24,grid,decoy
+baseball,baseball,ball,0.075,grid,decoy
+tennis_ball,tennis ball,ball,0.067,grid,decoy
+beach_ball,beach ball,ball,0.4,grid,decoy
+baseball_bat,baseball bat,sports,0.84,grid,decoy
+skateboard,skateboard,sports,0.8,grid,decoy
+dumbbell,dumbbell,sports,0.3,grid,decoy
+boxing_glove,boxing glove,sports,0.3,grid,decoy
+hockey_stick,hockey stick,sports,1.5,grid,decoy
+teapot,teapot,kitchen tool,0.25,grid,decoy
+frying_pan,frying pan,kitchen tool,0.45,grid,decoy
+toaster,toaster,kitchen appliance,0.3,grid,decoy
+kettle,kettle,kitchen appliance,0.28,grid,decoy
+whisk,whisk,kitchen tool,0.3,grid,decoy
+rolling_pin,rolling pin,kitchen tool,0.45,grid,decoy
+blender,blender,kitchen appliance,0.4,grid,decoy
+wine_glass,wine glass,cup,0.2,grid,decoy
+teacup,teacup and saucer,cup,0.15,grid,decoy
+ketchup_bottle,ketchup bottle,bottle,0.22,grid,decoy
+water_bottle,water bottle,bottle,0.25,grid,decoy
+milk_carton,milk carton,food,0.25,grid,decoy
+cereal_box,cereal box,food,0.3,grid,decoy
+banana,banana,food,0.2,grid,decoy
+apple,apple,food,0.08,grid,decoy
+honey_jar,honey jar,food,0.12,grid,decoy
+hammer,hammer,hand tool,0.33,grid,decoy
+screwdriver,screwdriver,hand tool,0.22,grid,decoy
+pliers,pliers,hand tool,0.2,grid,decoy
+hand_saw,hand saw,hand tool,0.6,grid,decoy
+tape_measure,tape measure,hand tool,0.08,grid,decoy
+flashlight,flashlight,hardware,0.2,grid,decoy
+padlock,padlock,hardware,0.07,grid,decoy
+light_bulb,light bulb,hardware,0.11,grid,decoy
+paintbrush,paintbrush,art supplies,0.25,grid,decoy
+paint_palette,paint palette,art supplies,0.3,grid,decoy
+pencil,pencil,stationery,0.19,grid,decoy
+scissors,scissors,stationery,0.2,grid,decoy
+stapler,stapler,stationery,0.17,grid,decoy
+calculator,calculator,stationery,0.15,grid,decoy
+book,book,paper,0.24,grid,decoy
+envelope,envelope,paper,0.22,grid,decoy
+notebook,notebook,paper,0.21,grid,decoy
+newspaper,newspaper,paper,0.4,grid,decoy
+baseball_cap,baseball cap,clothing,0.28,grid,decoy
+sunglasses,sunglasses,clothing,0.14,grid,decoy
+scarf,scarf,clothing,1.4,grid,decoy
+sock,sock,clothing,0.25,grid,decoy
+mitten,mitten,clothing,0.25,grid,decoy
+wristwatch,wristwatch,clothing,0.22,grid,decoy
+backpack,backpack,container,0.45,grid,decoy
+suitcase,suitcase,container,0.7,grid,decoy
+umbrella,umbrella,accessory,0.9,grid,decoy
+handbag,handbag,accessory,0.3,grid,decoy
+rain_boot,rain boot,footwear,0.38,grid,decoy
+sneaker,sneaker,footwear,0.29,grid,decoy
+slipper,slipper,footwear,0.27,grid,decoy
+headphones,headphones,electronics,0.2,grid,decoy
+camera,camera,electronics,0.13,grid,decoy
+radio,radio,electronics,0.3,grid,decoy
+alarm_clock,alarm clock,electronics,0.15,grid,decoy
+tv_remote,TV remote,electronics,0.2,grid,decoy
+mobile_phone,mobile phone,electronics,0.15,grid,decoy
+laptop,laptop,electronics,0.35,grid,decoy
+desk_fan,desk fan,appliance,0.4,grid,decoy
+clothes_iron,clothes iron,appliance,0.28,grid,decoy
+hair_dryer,hair dryer,personal care,0.25,grid,decoy
+toothpaste,toothpaste,personal care,0.19,grid,decoy
+hairbrush,hairbrush,personal care,0.23,grid,decoy
+comb,comb,personal care,0.18,grid,decoy
+yo_yo,yo-yo,toy,0.06,grid,decoy
+teddy_bear,teddy bear,toy,0.3,grid,decoy
+toy_car,toy car,toy,0.1,grid,decoy
+rubber_duck,rubber duck,toy,0.1,grid,decoy
+toy_blocks,toy blocks,toy,0.15,grid,decoy
+kite,kite,toy,0.9,grid,decoy
+violin,violin,instrument,0.6,grid,decoy
+snare_drum,snare drum,instrument,0.4,grid,decoy
+trumpet,trumpet,instrument,0.5,grid,decoy
+harmonica,harmonica,instrument,0.1,grid,decoy
+tambourine,tambourine,instrument,0.25,grid,decoy
+desk_globe,desk globe,decor,0.4,grid,decoy
+trophy,trophy,decor,0.3,grid,decoy
+candle,candle,decor,0.2,grid,decoy
+table_lamp,table lamp,decor,0.45,grid,decoy
+wall_clock,wall clock,decor,0.3,grid,decoy
+binoculars,binoculars,optics,0.15,grid,decoy
+magnifying_glass,magnifying glass,optics,0.25,grid,decoy
+cassette_tape,cassette tape,music,0.1,grid,decoy
+compact_disc,compact disc,music,0.12,grid,decoy
+garden_trowel,garden trowel,garden,0.3,grid,decoy
+garden_gloves,gardening gloves,garden,0.25,grid,decoy
+watering_can,watering can,garden,0.4,grid,practice_decoy
+birdhouse,birdhouse,decor,0.3,grid,practice_decoy
+lantern,lantern,decor,0.3,grid,practice_decoy
+spinning_top,spinning top,toy,0.08,grid,practice_decoy
+hourglass,hourglass,decor,0.2,grid,practice_decoy
+pepper_mill,pepper mill,kitchen tool,0.22,grid,practice_decoy
+hand_bell,hand bell,instrument,0.15,grid,practice_decoy
+anchor,anchor,decor,0.4,grid,practice_decoy

@@ -3,10 +3,9 @@
 By **Hunter Caraway** ([hcaraway5705@floridapoly.edu](mailto:hcaraway5705@floridapoly.edu)), https://github.com/Hunter-Caraway/room-recall-task
 
 An object recognition memory task for an in-lab psychology study on colored noise.
-Participants study a realistic basement holding photos of everyday objects, do 30 seconds
-of quick sums on a blank screen, then click every object they saw in a 6x4 grid where the
-room's objects are mixed in with decoys. It runs on [PsychoPy](https://www.psychopy.org),
-or as a single Windows .exe.
+Participants study a drawn basement holding everyday objects, do 30 seconds of quick
+sums on a blank screen, then click every object they saw in a 4x3 grid of drawings where the
+room's objects are mixed in with decoys. On Windows it runs from one file, `Run Task.bat`.
 
 The full design, and the reasons behind it, are in `docs/RECOGNITION_DESIGN.md`.
 
@@ -35,25 +34,29 @@ About **25 to 30 minutes** on screen; plan about 40 minutes per visit with conse
 
 ## The pictures
 
-- **Targets:** 42 photos from the Bank of Standardized Stimuli (BOSS; Brodeur et al., 2010, 2014; CC BY-SA 3.0).
-  They are cut out of their white background and placed into the rooms when the session
-  runs, at real-world size, on a spot that suits them (floor, table, shelf, wall, or leaning
-  on a wall), tinted by the light at that spot, with a contact shadow. A photo is turned in
-  the picture plane only where `art/dataset_photos.csv` says so, and is never mirrored.
-- **Deal:** the participant number shares the 42 photos over the 9 scored rooms (six get 5,
-  three get 4). Each photo is a target exactly once per participant.
-- **Decoys:** about 190 made objects, shot in Blender in the dataset's style (white
-  background, soft product light, three-quarter view). Each grid is filled up to 24 with
-  decoys; a decoy appears at most once per participant and is never in any room.
-- **Filler:** the smaller clutter in each room is made the same way as the decoys and added
-  with the same code as the targets, so the photos do not stand out. Filler and decoys are
-  separate pools.
-- **Grid tiles** show each object as photographed (never turned), on white.
+Everything is a flat illustration drawn in code (`art/drawings/`): the rooms, the objects
+in them and every grid tile. One consistent drawn style keeps any object from standing out
+and makes the grid objects easy to tell apart.
+
+- **Targets:** 42 drawings of objects from the Bank of Standardized Stimuli (BOSS;
+  Brodeur et al., 2010, 2014; CC BY-SA 3.0), each drawn after its BOSS photo (same object,
+  colours and view). They are placed into the rooms when the session runs, at real-world
+  size, on a surface that suits them (`art/drawings/objects.csv`): floor, table, shelf,
+  leaning against the wall, or hanging from a wall hook.
+- **Deal:** the participant number shares the 42 targets over the 9 scored rooms (six get 5,
+  three get 4). Each target appears exactly once per participant.
+- **Decoys:** 91 drawn everyday objects that are not BOSS targets (many share a kind with a
+  target: another ball, cup or hand tool). Each grid is filled up to 12 with decoys; a decoy
+  appears at most once per participant and is never in any room.
+- **Filler:** a few pieces of unscored clutter (boxes, cans, a tire) are drawn into each
+  room with the same code as the targets. Filler and decoys are separate pools.
+- **Grid tiles** show each object's drawing on white, the same drawing as in the room.
 
 ## Experimenter controls
 
 | Key | Action |
 | --- | --- |
+| B | On the participant-number screen: switch between main study and baseline group |
 | F8 | Continue past the experimenter screen, resume an unfinished session, close the end screen |
 | Space | Participant starts a room or a check after reading the instructions |
 | Y / N | Participant answers a sum |
@@ -65,7 +68,8 @@ About **25 to 30 minutes** on screen; plan about 40 minutes per visit with conse
 
 1. On GitHub, click **Code**, then **Download ZIP**.
 2. Right-click the zip, choose **Extract All**, and open the extracted folder.
-3. Double-click **`Run Task.bat`** (`Run Baseline.bat` for the baseline group).
+3. Double-click **`Run Task.bat`**. On the first screen, type the participant number and
+   press Enter. Press **B** first for the baseline group.
 
 The first run needs internet once and takes about a minute. It sets up a private copy of
 Python 3.11 with pygame in a `runtime` folder inside the task folder. It needs no admin
@@ -74,17 +78,10 @@ checksum (`windows/setup_runtime.ps1`). After that it starts straight away, with
 internet. Data goes to the `data` folder next to `Run Task.bat`. If Windows warns about
 a file from the internet, choose **More info**, then **Run anyway**.
 
-`Self Test.bat` runs scripted sessions with no window and should end with
-`SELF TEST PASSED`. From a command prompt, `"Run Task.bat" --windowed` runs in a window.
-
-Other builds (from GitHub Actions; the screens and data files are the same):
-
-- **`MemoryTask-Windows-exe`**: one `MemoryTask.exe`, nothing to download on first run.
-- **`MemoryTask-Windows-PsychoPy`**: draws with PsychoPy and records dropped display
-  frames. Needs **PsychoPy Standalone 2026.2.5 (Python 3.11)** installed.
-
-Use one build for every participant in a study; the `build` column records which one
-(`pygame` or `psychopy`). Run `docs/LAB_CHECKLIST.md` before the first participant.
+To check the computer, run `"Run Task.bat" --self-test` from a command prompt in the task
+folder. It plays scripted sessions with no window and should end with `SELF TEST PASSED`.
+`"Run Task.bat" --windowed` runs in a window. Run `docs/LAB_CHECKLIST.md` before the
+first participant.
 
 ## Files written to `data/`
 
@@ -104,50 +101,50 @@ Keep the key to what A, B and C mean somewhere else.
 
 ## Baseline group
 
-`Run Baseline.bat` shows the grids to people who **never see the rooms**: they practise
+Press **B** on the participant-number screen (the screen then says BASELINE GROUP) to
+show the grids to people who **never see the rooms**: they practise
 once, then pick the objects they guess were in a room they have not seen. No checks, no
-noise. If they pick the dataset photos more often than the decoys, the made decoys can be
-told apart from real photos and must be fixed before the main study. About 10 to 15
+noise. If they pick the targets more often than the decoys, the targets can be told apart
+from the decoys without seeing the room and the drawings must be fixed before the main study. About 10 to 15
 people, not also in the main study.
 
 ## Changing the study
 
 Edit `config.toml`: conditions, rooms, study time, delay, the 10 s hold, grid size, practice
-delay, digit-span settings and slider wording. Object sizes, surfaces and turns are in
-`art/dataset_photos.csv`; rebuild the assets after changing it.
+delay, digit-span settings and slider wording. Object sizes and surfaces are in
+`art/drawings/objects.csv`; rebuild the assets (`art/render_all.sh`) after changing it.
 
 ## Counterbalancing
 
 The participant number sets everything. Condition order uses a Williams balanced Latin
 square: 6 orders for 3 conditions, so 120 participants gives 20 per order. Room order
 within a block comes from a second balanced square, shifted in each block. The deal of
-photos and decoys is random but seeded by the participant number, and saved.
+targets and decoys is random but seeded by the participant number, and saved.
 
 ## Development (Linux)
 
 ```
 python3 -m venv .venv
-.venv/bin/pip install -r requirements-exe.txt numpy scipy
-.venv/bin/python -m pytest -q          # synthetic assets; runs without the dataset photos
+.venv/bin/pip install -r requirements-exe.txt
+.venv/bin/python -m pytest -q
 .venv/bin/python run_task.py --pygame --windowed
 ```
 
-PsychoPy needs Python 3.10 to 3.12; see `requirements.txt`. GitHub Actions runs the tests on
-Windows and builds both packages.
+An optional PsychoPy display (`python run_task.py` without `--pygame`) needs Python 3.10 to
+3.12; see `requirements.txt`. GitHub Actions runs the tests and `Run Task.bat` on Windows.
 
 ## Art
 
-All 3D models, textures and the HDRI are CC0 from [Poly Haven](https://polyhaven.com), see
-`art/CREDITS.md`. To rebuild everything (Blender 5.2, Python with Pillow, numpy and scipy):
+Every picture is drawn in code as SVG (`art/drawings/`) and rendered to PNG. To rebuild
+`assets/` after changing a drawing, a room or `art/drawings/objects.csv` (needs `cairosvg`):
 
-1. Put the dataset photos in `art/dataset_photos/`.
-2. `cd art && python fetch_assets.py` (downloads models and textures).
-3. `art/render_all.sh`: cuts out the photos, shoots the made objects, renders the four
-   basements, then `art/assemble_assets.py` builds `assets/` and fails if any target spot
-   overlaps another spot or the filler.
+```
+.venv/bin/pip install cairosvg
+art/render_all.sh
+```
 
-`art/choose_models.py` chose the decoy, practice and filler pools (`art/made_objects.csv`,
-editable). `art/build_basements.py` holds the rooms and their spots.
+It draws every object and room, then checks that participants 1 to 120 all get a deal that
+fits the rooms. `art/drawings/rooms.py` holds the rooms and their spots; see `art/CREDITS.md`.
 
 ## How to cite
 
@@ -158,11 +155,11 @@ APA and BibTeX. In APA:
 
 > Caraway, H. (2026). *Room Recall Task: An object recognition memory task for colored-noise research* [Computer software]. https://github.com/Hunter-Caraway/room-recall-task
 
-Also cite the Bank of Standardized Stimuli, which the target photos come from:
+Also cite the Bank of Standardized Stimuli, which the target objects are drawn from:
 
 > Brodeur, M. B., Dionne-Dostie, E., Montreuil, T., & Lepage, M. (2010). The Bank of Standardized Stimuli (BOSS), a new set of 480 normative photos of objects to be used as visual stimuli in cognitive research. *PLoS ONE, 5*(5), e10773. https://doi.org/10.1371/journal.pone.0010773
 >
 > Brodeur, M. B., Guérard, K., & Bouras, M. (2014). Bank of Standardized Stimuli (BOSS) phase II: 930 new normative photos. *PLoS ONE, 9*(9), e106953. https://doi.org/10.1371/journal.pone.0106953
 
-The BOSS photos and their cut-outs are CC BY-SA 3.0, not MIT. The rendered art uses CC0
-models and textures from Poly Haven (`art/CREDITS.md`).
+The target drawings are adapted from the BOSS photos, so they are CC BY-SA 3.0, not MIT
+(`art/CREDITS.md`).

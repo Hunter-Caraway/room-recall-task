@@ -16,7 +16,7 @@ from psychopy import core, event, logging, visual
 from .checks import CONTINUE_RECT, SLIDER_LEFT, SLIDER_RIGHT, SLIDER_Y, SliderController
 from .filler import FillerResult, Problem
 from .flow import QuitSession
-from .grid import CANVAS, DONE_RECT, PROMPT, PROMPT_Y, ROOM_ORIGIN, ROOM_SIZE, GridController
+from .grid import CANVAS, DONE_RECT, PROMPT, PROMPT_Y, ROOM_ORIGIN, ROOM_SIZE, GridController, group_line
 
 
 def rgb(r, g, b):
@@ -107,7 +107,7 @@ class PsychoPyDisplay:
         if symbol == key.Q and modifiers & key.MOD_CTRL and modifiers & key.MOD_SHIFT:
             self._quit = True
         names = {key.SPACE: "space", key.F8: "f8", key.ESCAPE: "escape", key.BACKSPACE: "backspace",
-                 key.RETURN: "return", key.ENTER: "return", key.Y: "y", key.N: "n"}
+                 key.RETURN: "return", key.ENTER: "return", key.Y: "y", key.N: "n", key.B: "b"}
         if symbol in names:
             self._queue.append(("key", names[symbol], self.now_ms()))
         from pyglet import event as pyglet_event
@@ -157,12 +157,12 @@ class PsychoPyDisplay:
                 if kind == "key" and value == key and self.now_ms() - shown >= hold_ms:
                     return
 
-    def enter_participant(self) -> int:
+    def enter_participant(self, baseline: bool = False) -> tuple[int, bool]:
         text, note = "", ""
         while True:
             self._draw_lines([
                 ("Experimenter: type the participant number, then press Enter", "title"),
-                (text or "_", "entry"), (note, "muted"),
+                (text or "_", "entry"), (note, "muted"), (group_line(baseline), "muted"),
             ])
             self.win.flip()
             for kind, value, _ in self.events():
@@ -170,9 +170,11 @@ class PsychoPyDisplay:
                     text += value
                 elif kind == "key" and value == "backspace":
                     text = text[:-1]
+                elif kind == "key" and value == "b":
+                    baseline = not baseline
                 elif kind == "key" and value == "return":
                     if text and 1 <= int(text) <= 9999:
-                        return int(text)
+                        return int(text), baseline
                     note = "Enter a number from 1 to 9999"
 
     def ask_resume(self, number: int) -> bool:

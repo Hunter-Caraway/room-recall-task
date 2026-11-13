@@ -85,24 +85,24 @@ def assets(tmp_path_factory):
     return fake_assets.make(tmp_path_factory.mktemp("assets"))
 
 
-def test_deal_uses_every_photo_once_and_never_repeats_a_decoy(assets):
+def test_deal_uses_every_target_once_and_never_repeats_a_decoy(assets):
     items = load_items(assets)
     rooms = {r: load_room(assets, r) for r in ROOMS}
     blocks = build_schedule(5, ["A", "B", "C"], ROOMS)
-    trials = deal(5, blocks, rooms, pool(items, "target"), pool(items, "decoy"), 24)
-    assert trials == deal(5, blocks, rooms, pool(items, "target"), pool(items, "decoy"), 24)
+    trials = deal(5, blocks, rooms, pool(items, "target"), pool(items, "decoy"), 12)
+    assert trials == deal(5, blocks, rooms, pool(items, "target"), pool(items, "decoy"), 12)
     targets = [n for t in trials for n, _ in t.targets]
     assert sorted(targets) == sorted(i.name for i in pool(items, "target"))
     assert sorted(len(t.targets) for t in trials) == [4, 4, 4, 5, 5, 5, 5, 5, 5]
     decoys = [n for t in trials for n in t.grid if n not in dict(t.targets)]
-    assert len(decoys) == len(set(decoys)) == 9 * 24 - 42
+    assert len(decoys) == len(set(decoys)) == 9 * 12 - 42
     for trial in trials:
         spots = {s.id: s for s in rooms[trial.room].spots}
         assert len({s for _, s in trial.targets}) == len(trial.targets)
         assert all(spots[s].fits(items[n]) for n, s in trial.targets)
-        assert set(dict(trial.targets)) <= set(trial.grid) and len(trial.grid) == 24
+        assert set(dict(trial.targets)) <= set(trial.grid) and len(trial.grid) == 12
     other = deal(6, build_schedule(6, ["A", "B", "C"], ROOMS), rooms, pool(items, "target"),
-                 pool(items, "decoy"), 24)
+                 pool(items, "decoy"), 12)
     assert [t.targets for t in other] != [t.targets for t in trials]
 
 
@@ -121,7 +121,7 @@ def test_compose_and_tile_draw_the_objects(assets):
     room = load_room(assets, "storage")
     from PIL import Image
     base = Image.open(room.image).convert("RGB")
-    item = pool(items, "decoy")[0]
+    item = pool(items, "target")[0]
     spot = next(s for s in room.spots if s.fits(item))
     picture = compose(base, [(item, spot)])
     assert picture.size == base.size and picture.getpixel((int(spot.x), int(spot.y) - 5)) != base.getpixel(

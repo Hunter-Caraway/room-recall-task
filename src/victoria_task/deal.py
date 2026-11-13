@@ -3,8 +3,8 @@
 The participant number seeds every choice, so the same number always gets the same
 deal and a resumed session continues exactly where it stopped.
 
-  - The target photos are shared out over the scored trials, as evenly as they go
-    (42 photos over 9 trials: six trials get 5 and three get 4). Each photo is a
+  - The targets are shared out over the scored trials, as evenly as they go
+    (42 targets over 9 trials: six trials get 5 and three get 4). Each one is a
     target once, so an earlier target never comes back in a later grid.
   - In each trial every target gets its own spot in that room, one that suits its
     size and surface.
@@ -85,13 +85,13 @@ def deal(participant: int, blocks: list[Block], rooms: dict[str, Room], targets:
     if base + (1 if extra else 0) > tiles:
         raise DealError("more targets per trial than grid tiles")
     for _ in range(attempts):
-        photos = list(targets)
-        rng.shuffle(photos)
+        drawn = list(targets)
+        rng.shuffle(drawn)
         counts = [base + 1] * extra + [base] * (len(slots) - extra)
         rng.shuffle(counts)
         placed, start = [], 0
         for (block, room, _), count in zip(slots, counts):
-            fit = place(photos[start:start + count], rooms[room], rng)
+            fit = place(drawn[start:start + count], rooms[room], rng)
             if fit is None:
                 break
             placed.append(fit)

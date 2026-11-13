@@ -56,8 +56,8 @@ class ScriptedDisplay:
         if any(text == WAIT_TEXT for text, _ in lines):
             self.holds.append(hold_ms)
 
-    def enter_participant(self):
-        return self.participant
+    def enter_participant(self, baseline=False):
+        return self.participant, baseline
 
     def ask_resume(self, number):
         return True

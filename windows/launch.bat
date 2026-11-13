@@ -1,6 +1,6 @@
 @echo off
 rem Runs the task with the private Python in runtime\, setting it up on the first run.
-rem Called by Run Task.bat and Run Baseline.bat; extra arguments go to run_task.py.
+rem Called by Run Task.bat; extra arguments go to run_task.py.
 setlocal
 cd /d "%~dp0.."
 if not exist "run_task.py" (

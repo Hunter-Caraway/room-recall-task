@@ -34,7 +34,7 @@ class Session:
     """One participant's progress: what is next, what is saved, and how it resumes.
 
     baseline=True is the no-study group: they never see the rooms, so their picks
-    show whether made decoys can be told apart from real photos. Their files start
+    show whether targets can be told apart from decoys without having seen them. Their files start
     with B instead of P, their condition is recorded as baseline, and they do no
     manipulation checks.
     """
@@ -145,7 +145,6 @@ class Session:
             tiles.append({
                 **base, "tile": index, "item": name, "label": item.label, "category": item.category,
                 "role": "target" if target else "decoy", "spot": spots.get(name, ""),
-                "rotate_deg": f"{item.rotate_deg:g}" if target else "",
                 "selected": int(state.selected), "correct": int(state.selected == target),
                 "first_selected_ms": "" if state.first_selected_ms is None else state.first_selected_ms,
                 "last_toggle_ms": "" if state.last_toggle_ms is None else state.last_toggle_ms,

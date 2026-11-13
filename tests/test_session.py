@@ -20,6 +20,6 @@ def test_full_session_on_synthetic_assets(tmp_path):
     assert check_session(load_config(ROOT / "config.toml"), assets, tmp_path / "data") == []
 
 
-@pytest.mark.skipif(not (ASSETS / "objects" / "photos").exists(), reason="dataset photos not installed")
+@pytest.mark.skipif(not (ASSETS / "objects" / "drawings").exists(), reason="drawings not built (art/build_drawn.py)")
 def test_full_session_on_real_assets(tmp_path):
     assert check_session(load_config(ROOT / "config.toml"), ASSETS, tmp_path) == []

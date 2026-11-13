@@ -36,7 +36,7 @@ class Display(Protocol):
     def message(self, lines: Lines, key: str, hold_ms: int = 0) -> None:
         """Show lines until `key` ("space" or "f8") is pressed; the key does nothing
         until the screen has been up for hold_ms."""
-    def enter_participant(self) -> int: ...
+    def enter_participant(self, baseline: bool = False) -> tuple[int, bool]: ...
     def ask_resume(self, number: int) -> bool:
         """F8 resumes the unfinished session; Esc returns False to type another number."""
     def prepare(self, key: str, room, tiles: list) -> None:
@@ -90,7 +90,7 @@ class Experiment:
     # ------------------------------------------------------------ screens
     def choose_session(self) -> Session:
         while True:
-            number = self.display.enter_participant()
+            number, self.baseline = self.display.enter_participant(self.baseline)
             session = Session(self.config, self.data_dir, number, self.items, self.rooms, self.build,
                               baseline=self.baseline)
             if session.store.has_session():

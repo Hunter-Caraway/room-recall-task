@@ -4,21 +4,13 @@ About 20 minutes the first time. Use the same computer, screen and mouse as the 
 
 ## Install (once)
 
-**Using the zip download (simplest):** download the ZIP from GitHub, right-click it,
-choose **Extract All**, and open the folder. Double-click `Self Test.bat`. The first
-time, it sets up Python (internet needed, about a minute); it should end with
-`SELF TEST PASSED`. Then go to "Try a session".
-
-**Using the .exe build:** unzip `MemoryTask-Windows-exe` and skip to "Try a session",
-double-clicking `MemoryTask.exe` instead of `Run Task.bat`. If Windows SmartScreen appears,
-choose **More info**, then **Run anyway**, or ask IT to allow it.
-
-**Using the PsychoPy build:**
-
-1. Install **PsychoPy Standalone 2026.2.5, Python 3.11 version** from https://www.psychopy.org/download.html. If it needs admin rights, ask IT.
-2. Unzip the `MemoryTask-Windows` folder somewhere the account can write to, such as the Desktop.
-3. Double-click `Self Test.bat`. It should end with `SELF TEST PASSED`. If it says PsychoPy was not found, put the full path of PsychoPy's `python.exe` into `psychopy_python.txt` in the same folder.
-4. Double-click `Smoke Test.bat`. A window opens briefly; the console prints `smoke test ok` with the screen size.
+1. On GitHub, click **Code**, then **Download ZIP**. Right-click the zip, choose
+   **Extract All**, and open the extracted folder somewhere the account can write to,
+   such as the Desktop.
+2. Click the folder's address bar, type `cmd`, press Enter, then type
+   `"Run Task.bat" --self-test` and press Enter. The first time, it sets up Python
+   (internet needed, about a minute). It should end with `SELF TEST PASSED`.
+   If Windows warns about a file from the internet, choose **More info**, then **Run anyway**.
 
 ## Try a session
 
@@ -27,7 +19,7 @@ choose **More info**, then **Run anyway**, or ask IT to allow it.
 3. Do the practice room, then one full scored room, including the sums.
 4. Quit with **Ctrl+Shift+Q** during the second scored room.
 5. Start `Run Task.bat` again, type `999`, press **F8** to resume, and finish (about 30 minutes).
-6. Open `data\P999_trials.csv` and confirm it has 9 rows, with `targets` adding up to 42 and `study_dropped_frames` 0 or close to it. Open `data\P999_tiles.csv` and confirm it has 216 rows (9 rooms x 24 tiles).
+6. Open `data\P999_trials.csv` and confirm it has 9 rows, with `targets` adding up to 42 and `study_dropped_frames` 0 or close to it. Open `data\P999_tiles.csv` and confirm it has 108 rows (9 rooms x 12 tiles).
 7. Open `data\P999_checks.csv` and confirm it has digit-span and slider rows for blocks 1, 2 and 3.
 8. Delete every `P999_` file from `data`.
 

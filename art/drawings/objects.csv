@@ -1,0 +1,47 @@
+name,label,category,size_m,surfaces,pool
+8ball,8-ball,ball,0.057,table|shelf|floor,target
+bolt01a,bolt,hardware,0.10,table|shelf,target
+bottleofwhitewine,wine bottle,bottle,0.30,table|shelf|floor,target
+bowtie,bow tie,clothing,0.12,table,target
+coffeemaker,coffee maker,kitchen appliance,0.33,table|shelf,target
+coloringset,colouring set,art supplies,0.40,table|floor,target
+electricguitar01,electric guitar,instrument,0.98,lean|wall,target
+electricmixer,stand mixer,kitchen appliance,0.38,table|shelf,target
+electrictoothbrush01c,electric toothbrush,personal care,0.23,table,target
+flipflop01b,flip-flop,footwear,0.26,floor|table,target
+football,american football,ball,0.28,floor|shelf|table,target
+gamecontroller01,game controller,electronics,0.19,table,target
+garbagecan02,pedal bin,container,0.40,floor,target
+handheldtelescope,telescope,optics,0.45,table|shelf,target
+hose,garden hose,garden,0.45,wall,target
+ipod,music player,electronics,0.11,table|shelf,target
+jarofapplesauce,jar of applesauce,food,0.15,table|shelf,target
+jeans01,jeans,clothing,0.95,wall,target
+key07,keys,hardware,0.09,table|wall,target
+knife03,kitchen knife,kitchen tool,0.30,table,target
+laundrybasket01a,laundry basket,container,0.60,floor,target
+lintroller,lint roller,personal care,0.25,table|shelf,target
+mug05,mug,cup,0.12,table|shelf,target
+musicsheet,sheet music,paper,0.30,table,target
+painting,painting,decor,0.45,wall|lean,target
+record,vinyl record,music,0.30,wall|lean,target
+rubikcube,puzzle cube,toy,0.09,table|shelf,target
+saltshaker03a,salt shaker,kitchen tool,0.11,table|shelf,target
+snowglobe,snow globe,decor,0.12,table|shelf,target
+soccerball,soccer ball,ball,0.22,floor|shelf,target
+soccercleat01,football boot,footwear,0.29,floor|shelf,target
+stubbywrench01a,spanner,hand tool,0.20,table|wall,target
+tabascosauce,hot sauce,bottle,0.14,table|shelf,target
+tennisracket,tennis racket,sports,0.68,wall|lean,target
+tie02,necktie,clothing,0.50,wall,target
+travelmug,travel mug,cup,0.20,table|shelf,target
+triangleruler01,set square,stationery,0.30,table,target
+vacuumcleaner01,stick vacuum,appliance,1.10,lean,target
+visor,sun visor,clothing,0.26,table|shelf,target
+volleyball,volleyball,ball,0.21,floor|shelf,target
+washingmachine,washing machine,appliance,0.95,floor,target
+watercolorpaintset,watercolour set,art supplies,0.25,table|shelf,target
+ceramic_vase_04,jug vase,vase,0.30,table|shelf,practice_target
+brass_vase_03,copper vase,vase,0.25,table|shelf,practice_target
+ceramic_pot,clay pot,container,0.35,floor|table,practice_target
+pocket_watch,pocket watch,clock,0.10,table,practice_target

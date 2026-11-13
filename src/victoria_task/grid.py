@@ -10,8 +10,8 @@ from dataclasses import dataclass, field
 CANVAS = (1920, 1080)
 ROOM_ORIGIN = (160, 90)
 ROOM_SIZE = (1600, 900)
-TILE = 200
-GAP = 20
+TILE = 260
+GAP = 24
 GRID_TOP = 100
 PROMPT_Y = 50  # centre of the question above the grid
 DONE_RECT = (860, 985, 200, 76)  # x, y, width, height
@@ -75,3 +75,10 @@ class GridController:
     def point_of(self, index: int) -> tuple[float, float]:
         x, y, w, h = self.rects[index]
         return x + w / 2, y + h / 2
+
+
+def group_line(baseline: bool) -> str:
+    """The participant-number screen's note on which group this session is for."""
+    if baseline:
+        return "BASELINE GROUP: grids only, no rooms (files start with B). Press B for the main study."
+    return "Main study. Press B for the baseline group (grids only, no rooms)."

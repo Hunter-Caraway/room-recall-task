@@ -17,7 +17,7 @@ from .schedule import Block, build_schedule
 # One row per grid tile.
 TILE_COLUMNS = [
     "participant", "baseline", "session_resumed", "block", "condition", "room", "room_order_in_block",
-    "tile", "item", "label", "category", "role", "spot", "rotate_deg", "selected", "correct",
+    "tile", "item", "label", "category", "role", "spot", "selected", "correct",
     "first_selected_ms", "last_toggle_ms", "toggles", "build",
 ]
 # One row per trial (room).
